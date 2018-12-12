@@ -1,6 +1,23 @@
-"""
-This is an example for a bot.
-"""
+#####################################################################################
+#
+# 1.  Choose your own standards or style guide
+# 2.  Write your code for a global case not for a specific case -> make it generic
+# 3.  Manage your code in a source control like Git... ( Like Github )
+#     If you dont want a public repository, as Github provides,
+#     you can choose work with Gitlab or Bitbucket ( Whatever you choose ).
+# 4.  Seperate your code to files.
+# 5.  Define assignments and assign them to each teammate.
+# 6.  Code review each other's code.
+# 7.  Document your functions.
+# 8.  Refactor, Refactor, Refactor! Your code can allways improve.
+# 9.  Do not use magic numbers! You can get anything from the API + Calculations.
+# 10. Document your versions to keep track of your most recent code.
+# 11. Pick good names to your variables. 
+# 12. Have Fun and win :)
+#
+#
+#
+#####################################################################################
 from elf_kingdom import *
 
 lava_giant_max_speed = 200
