@@ -14,38 +14,31 @@ class Elf(BotObject):
         else:
             self.elf.move_to(other)
 
+    def attack_closest_thing(self, num):
+        if num == 0:
+            enemies_to_check = self.game.get_enemy_living_elves()
+        elif num == 1:
+            enemies_to_check = self.game.get_enemy_portals()
+        elif num == 2:
+            enemies_to_check =self.game.get_enemy_ice_trolls()
+        elif num == 3:
+            enemies_to_check = self.game.get_enemy_lava_giants()
+
+        if enemies_to_check():
+            closest_enemy = enemies_to_check[0]
+            for enemy in enemies_to_check:
+                if enemy.distance(self.elf) < enemies_to_check.distance(self.elf):
+                    closest_enemy = enemy
+        self.go_and_attack(closest_enemy)
+
     def attack_closest_elf(self):
-        if self.game.get_enemy_living_elves():
-            enemy_elves = self.game.get_enemy_living_elves()
-            closest_elf = enemy_elves[0]
-            for elf in enemy_elves:
-                if elf.distance(self.elf) < closest_elf.distance(self.elf):
-                    closest_elf = elf
-            self.go_and_attack(closest_elf)
+        self.attack_closest_thing(0)
 
     def attack_closest_portal(self):
-        if self.game.get_enemy_portals():
-            enemy_portals = self.game.get_enemy_portals()
-            closest_portal = enemy_portals[0]
-            for portal in enemy_portals:
-                if portal.distance(self.elf) < enemy_portals.distance(self.elf):
-                    closest_portal = portal
-            self.go_and_attack(closest_portal)
+        self.attack_closest_thing(1)
 
     def attack_closest_ice_troll(self):
-        if self.game.get_enemy_ice_trolls():
-            enemy_ice_trolls = self.game.get_enemy_ice_trolls()
-            closest_ice_troll = enemy_ice_trolls[0]
-            for ice_troll in enemy_ice_trolls:
-                if ice_troll.distance(self.elf) < enemy_ice_trolls.distance(self.elf):
-                    closest_ice_troll = ice_troll
-            self.go_and_attack(closest_ice_troll)
+        self.attack_closest_thing(2)
 
     def attack_closest_lava_giant(self):
-        if self.game.get_enemy_lava_giants():
-            enemy_lava_giants = self.game.get_enemy_lava_giants()
-            closest_lava_giant = enemy_lava_giants[0]
-            for lava_giant in enemy_lava_giants:
-                if lava_giant.distance(self.elf) < enemy_lava_giants.distance(self.elf):
-                    closest_lava_giant = lava_giant
-            self.go_and_attack(closest_lava_giant)
+        self.attack_closest_thing(3)
