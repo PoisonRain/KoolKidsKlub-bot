@@ -1,7 +1,6 @@
 import BotObject
 from elf_kingdom import *
 
-
 class Elf(BotObject):
     def __init__(self, game, elf):
         super.__init__(game)
@@ -15,8 +14,8 @@ class Elf(BotObject):
             else:
                 self.elf.move_to(other)
 
-    # basally a switch
-    def attack_closest_thing(self, num):
+    # basically a switch
+    def attack_closest_thing(self, num = -1): #num represents what enemy to attack, with no input it searches for any enemy
         if num == 0:
             enemies_to_check = self.game.get_enemy_living_elves()
         elif num == 1:
@@ -25,6 +24,11 @@ class Elf(BotObject):
             enemies_to_check = self.game.get_enemy_ice_trolls()
         elif num == 3:
             enemies_to_check = self.game.get_enemy_lava_giants()
+        elif num == 4:
+            enemies_to_check = self.game.get_enemy_creatures()
+        elif num == -1:
+            enemies_to_check = self.game.get_enemy_creatures()+self.game.get_enemy_living_elves()
+
         if self.elf.is_alive():
             if enemies_to_check():
                 closest_enemy = enemies_to_check[0]
@@ -44,6 +48,9 @@ class Elf(BotObject):
 
     def attack_closest_lava_giant(self):
         self.attack_closest_thing(3)
+
+    def attack_closest_enemy(self):
+        self.attack_closest_thing(4)
 
     def build_portal_at(self, loc):
         if self.elf.location == loc:
