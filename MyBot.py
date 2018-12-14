@@ -1,5 +1,5 @@
 from elf_kingdom import *
-import AttackElf
+from AttackElf import *
 
 def do_turn(game):
     attack_elf = AttackElf(game)

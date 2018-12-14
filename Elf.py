@@ -1,9 +1,8 @@
-import BotObject
+from BotObject import BotObject
 from elf_kingdom import *
 
-class Elf(BotObject):
+class Elf(object):
     def __init__(self, game, elf):
-        super.__init__(game)
         self.game = game
         self.elf = elf
 
@@ -15,7 +14,8 @@ class Elf(BotObject):
                 self.elf.move_to(other)
 
     # basically a switch
-    def attack_closest_thing(self, num = -1): #num represents what enemy to attack, with no input it searches for any enemy
+    # num represents what enemy to attack, with no input it searches for any enemy
+    def attack_closest_thing(self, num = -1):
         if num == 0:
             enemies_to_check = self.game.get_enemy_living_elves()
         elif num == 1:
