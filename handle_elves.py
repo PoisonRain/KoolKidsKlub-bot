@@ -21,7 +21,7 @@ def handle_elves(game):
         my_castle = game.get_my_castle()
 
         # funcs
-        def elf_flanking(game, elf):  # well its the elf that flanks n shit
+        def elf_flanking(game):  # well its the elf that flanks n shit
             if enemy_castle.location.row > my_castle.location.row:
                 pass  # flank with the most bottom elf
             else:
@@ -31,7 +31,7 @@ def handle_elves(game):
         if my_elves:  # general check if we have elves
             if my_portals:
                 if (len(filter(lambda x: x.location.distance(my_castle.location) > x.location.distance(enemy_castle.location), my_portals)) < 1):  # basically check if you have an attack portal
-                    elf_flanking()
+                    elf_flanking(game)
 
     except Exception, msg:
         print "fuck elf handling fucked up"
