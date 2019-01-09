@@ -33,8 +33,9 @@ def handle_elves(game):
                 if (len(filter(lambda x: x.location.distance(my_castle.location) > x.location.distance(enemy_castle.location), my_portals)) < 1):  # basically check if you have an attack portal
                     elf_flanking()
 
-    except:
+    except Exception, msg:
         print "fuck elf handling fucked up"
+        print msg
 
 
 
