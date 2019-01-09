@@ -49,7 +49,7 @@ def handle_elves(game):
                 elf_general(game) # catch all
 
     except Exception, msg:
-        print "fuck elf handling fucked up"
+        print "fuck, elf handling fucked up"
         print msg
 
 
