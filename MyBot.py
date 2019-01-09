@@ -1,5 +1,10 @@
 from elf_kingdom import *
-from handle_elves import handle_elves
+from handle_elves import *
+
 
 def do_turn(game):
-    handle_elves(game)
+    try:
+        handle_elves(game)
+    except Exception, msg:
+        print "Something withoud a try fucked up rip"
+        print msg
