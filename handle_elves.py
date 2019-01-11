@@ -43,7 +43,7 @@ def handle_elves(game):
         if my_elves:  # general check if we have elves
             if my_portals:
                 # basically check if you have a portal close to the enemy castle:
-                if len(filter(lambda x: x.location.distance(enemy_castle.location) < 1500, my_portals)) != 0:
+                if len([x for x in my_portals if x.location.distance(enemy_castle) < 1500]) == 0:
                     elf_flanking(game)
             if my_elves: # check if still has elves to make moves with
                 elf_general(game) # catch all
