@@ -1,5 +1,5 @@
 from elf_kingdom import *
 
 
-def Aggressive(game, elfDict):
+def aggressive(game, elfDict):
     pass
