@@ -14,7 +14,7 @@ def get_circle(start_point, mid_point,
     x2 = mid_point[0]
 
     x3 = end_point[0]
-
+ 00
     y1 = start_point[1]
 
     y2 = mid_point[1]
