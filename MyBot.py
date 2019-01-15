@@ -13,6 +13,7 @@ srtI = None
 
 def do_turn(game):
         # vars
+        global elfDict, agrI
         my_elves = game.get_my_living_elves()
         my_portals = game.get_my_portals()
         enemy_castle = game.get_enemy_castle()
@@ -20,13 +21,12 @@ def do_turn(game):
         if agrI is None:
             agrI = Aggressive(game, elfDict)
 
-
         # funcs
         def must_have_portals(elfDict):
             pass
 
         # main
-        # update elfDict
+        # update elfDict:
         if my_elves:  # add new and delete old elves from the dictionary
             for elf in my_elves:  # add new
                 if elf.unique_id not in elfDict.keys():
