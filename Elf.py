@@ -3,6 +3,7 @@ elf class n shit
 """
 
 from elf_kingdom import *
+from math import floor
 
 
 class Elf:
@@ -32,7 +33,7 @@ class Elf:
             self.move(self.moving_to[1])
             return
         if srt is None:
-            srt = self.game.get_enemy_castle().location
+            srt = self.game.get_my_castle().location
 
         def second_degree(a, b, c):
             # :return: 2 solution of a second degree equation
@@ -41,24 +42,41 @@ class Elf:
             return solve1, solve2
 
         # tgt x and b:
-        xt = tgt.row
-        yt = tgt.col
+        xt = tgt.col
+        yt = tgt.row
 
         # y-y1 = m(x-x1)=
-        m = ((tgt.row - srt.row) // (tgt.col - srt.col)) // -1
+        try:
+            m = ((tgt.col - srt.col) // (tgt.row - srt.row)) // -1
+        except ZeroDivisionError, msg:
+            print msg
+            print "x1 - x2: " + str(tgt.col - srt.col)
+            print "y1 - y2: " + str(tgt.row - srt.row)
         b = (m*xt)+yt
 
         # -b+-sqrt(b^2-4ac)/2a:
         ax = 2*(m*m)
-        bx = (2*xt*m)-(2*m*(yt-b))
+        bx = (2*xt*m)+(-2*m*(yt-b))
         c = ((xt*xt) + ((yt-b)**2)) - (dist*dist)
 
         # final solve for the 2 points:
         x1, x2 = second_degree(ax, bx, c)
-        y1 = (m*x1) + b
-        y2 = (m*x2) + b
+        y1, y2 = (m*x1) + b, (m*x2) + b
 
-        pointA = Location(x1, y1)
-        pointB = Location(x2, y2)
-        print "pointA: "+pointA, " pointA: "+pointB
-        return
+        map(lambda x: floor(x), [x1, x2])
+        map(lambda y: floor(y), [y1, y2])
+
+        for x in [x1, x2]:
+            if x > game.cols:
+                x = game.cols
+            if x < 0:
+                x = 0
+
+        pointA, pointB = Location(x1, y1), Location(x2, y2)
+
+        print "pointA: (" + str(pointA.col) + "," + str(pointA.row) + ") " + "pointB: (" + str(pointB.col) + "," + str(pointB.row) + ")"
+        enemy_portals = game.get_enemy_portals()
+        if enemy_portals:
+            pass
+        else:
+            pass
