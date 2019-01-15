@@ -9,7 +9,6 @@ alreadyNormal = False
 
 
 def do_turn(game):
-    try:
         # vars
         my_elves = game.get_my_living_elves()
         my_portals = game.get_my_portals()
@@ -17,26 +16,29 @@ def do_turn(game):
         my_castle = game.get_my_castle()
 
         # funcs
-        def must_have_portals(game, elfDict):
+        def must_have_portals(elfDict):
             pass
 
         # main
+        # update elfDict
         if my_elves:  # add new and delete old elves from the dictionary
             for elf in my_elves:  # add new
                 if elf.unique_id not in elfDict:
                     elfDict[elf.unique_id] = Elf(game, elf)
 
             for uid in elfDict:  # delete old
-                if uid not in my_elves:
+                if uid not in [elf.unique_id for elf in my_elves]:
                     del elfDict[uid]
         else:  # if we have no elves just clear the dictionary
             elfDict.clear()
 
-        for key,val in elfDict:  # update game for all elf objects
-            val.game = game
+        for elf in elfDict.values():  # update game for all elf objects
+            elf.game = game
 
-        if my_portals is None: # sets list to list if its null
+        # fix None
+        if my_portals is None:  # sets list to list if its null
             my_portals = []
+
         # choosing an attack mode:
         if not alreadyNormal and len(my_portals) < 7 and game.turn < (my_castle.location.distance(enemy_castle) / 50):
             start(game, elfDict)
@@ -44,7 +46,3 @@ def do_turn(game):
             aggressive(game, elfDict)
         else:
             normal(game, elfDict)
-
-    except Exception, msg:
-        print "Something without a try fucked up, rip"
-        print msg
