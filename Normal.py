@@ -6,10 +6,9 @@ MANE_DRAIN_RANGE = 1500  # the distance of checking if there is a creature in ra
 def normal(game, elfDict):
     pass
 
-def check():  # check mana and location of portals before doing stuffz
-    pass
 
-def normal_enemy_mana_drain(game, attack_portals):  # send a lava golem if: there is no lava golem near the enemy castel already and no enemy ice troll
+def normal_enemy_mana_drain(game,
+                            attack_portals):  # send a lava golem if: there is no lava golem near the enemy castel already and no enemy ice troll
     lava, ice = True
     for creature in game.get_my_lava_giants():
         if creature.distance(game.get_enemy_castle()) < MANE_DRAIN_RANGE:
@@ -24,7 +23,8 @@ def normal_enemy_mana_drain(game, attack_portals):  # send a lava golem if: ther
                 lava, ice = True
 
 
-def normal_attack_lowMana(game, Attack_List, attack_portals):  # when enemy has low mana increese attack according to the attack list
+def normal_attack_lowMana(game, Attack_List,
+                          attack_portals):  # when enemy has low mana increese attack according to the attack list
     for portal in attack_portals:  # instead of the mana drain spam.
         if Attack_List.check_next() == "lava":
             if portal.can_summon_lava_giant():
