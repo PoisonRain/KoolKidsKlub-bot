@@ -10,7 +10,7 @@ alreadyNormal = False
 
 def do_turn(game):
     try:
-        # args
+        # vars
         my_elves = game.get_my_living_elves()
         my_portals = game.get_my_portals()
         enemy_castle = game.get_enemy_castle()
@@ -46,5 +46,5 @@ def do_turn(game):
             normal(game, elfDict)
 
     except Exception, msg:
-    print "Something without a try fucked up, rip"
-    print msg
+        print "Something without a try fucked up, rip"
+        print msg

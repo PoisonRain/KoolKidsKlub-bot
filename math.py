@@ -1,7 +1,6 @@
 #check save
 
 from elf_kingdom import *
-
 import math
 
 distance_to_avoid = 300  # magic num bluhhhhhh bad nu nu
