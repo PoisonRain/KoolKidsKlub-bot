@@ -35,46 +35,23 @@ class Elf:
         if srt is None:
             srt = self.game.get_my_castle().location
 
-        def second_degree(a, b, c):
-            # :return: 2 solution of a second degree equation
-            sqrt = math.sqrt((b*b)-(4*a*c))
-            solve1 = (-b-sqrt)/(2*a)
-            solve2 = (-b+sqrt)/(2*a)
-            return solve1, solve2
+        Xa = srt.col
+        Ya = srt.row
+        Xb = tgt.col
+        Yb = tgt.row
 
-        # tgt x and b:
-        xt = tgt.col
-        yt = tgt.row
+        Mab = (Ya - Yb) // (Xa - Xb)
+        A = -Mab
+        B = 1
+        C = Mab * Xb - Yb
 
-        # y-y1 = m(x-x1)=
-        try:
-            m = ((tgt.col - srt.col) // (tgt.row - srt.row)) // -1
-        except ZeroDivisionError, msg:
-            print msg
-            print "x1 - x2: " + str(tgt.col - srt.col)
-            print "y1 - y2: " + str(tgt.row - srt.row)
-        b = (-m*xt)+yt
+        Mbp = -(1 // Mab)
+        Xp1 = int((dist * math.sqrt(A * A + B * B) - C + Mbp * Xb - Yb) / (A + Mbp))
+        Yp1 = int(Mbp*Xp1 - Mbp*Xb +Yb)
+        Xp2 = int(((-dist) * math.sqrt(A * A + B * B) - C + Mbp * Xb - Yb) / (A + Mbp))
+        Yp2 = int(Mbp * Xp2 - Mbp * Xb + Yb)
 
-        # -b+-sqrt(b^2-4ac)/2a:
-        ax = 2*(m*m)
-        bx = (-2*m*xt) + (-2*(yt-b)*m)
-        c = ((xt*xt) + ((yt-b)**2)) - (dist*dist)
-
-        # final solve for the 2 points:
-        x1, x2 = second_degree(ax, bx, c)
-        y1, y2 = (m*x1) + b, (m*x2) + b
-
-        for x in [x1, x2]:
-            if x > self.game.cols:
-                x = self.game.cols
-            if x < 0:
-                x = 0
-
-        pointA, pointB = Location(x1, y1), Location(x2, y2)
-
-        print "pointA: (" + str(pointA.col) + "," + str(pointA.row) + ") " + "pointB: (" + str(pointB.col) + "," + str(pointB.row) + ")"
-        enemy_portals = self.game.get_enemy_portals()
-        if enemy_portals:
-            pass
-        else:
-            pass
+        pointA = Location(Yp1, Xp1)
+        pointB = Location(Yp2, Xp2)
+        print "pointA: " + str(pointA) + " pointB: " + str(pointB)
+        self.elf.move_to(pointA)
