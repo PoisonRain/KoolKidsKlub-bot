@@ -10,7 +10,6 @@ class Elf:
     def __init__(self, game, elf):
         self.game = game
         self.elf = elf
-        self.location = elf.location
         # used to remember where the user designated the elf to go last turn and where he actually went:
         self.moving_to = [Location(0,0), Location(0,0)]  # (user input, elf target)
         self.was_building = None  # used to check if the elf was building the previous turn
