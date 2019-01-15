@@ -13,6 +13,7 @@ class Elf:
         self.location = elf.location
         # used to remember where the user designated the elf to go last turn and where he actually went:
         self.moving_to = [Location(0,0), Location(0,0)]  # (user input, elf target)
+        self.was_building = None  # used to check if the elf was building the previous turn
 
     def move(self, dis):
         self.elf.move_to(dis)
@@ -68,12 +69,12 @@ class Elf:
         if dir is None:
             enemy_portals = self.game.get_enemy_castle()
             dest = pointA
-            min = self.game.rows + self.game.cols
+            max = 0
             if enemy_portals:
                 for point in [pointA, pointB]:
                     for portal in enemy_portals:
-                        if point.distance(portal.location) < min:
-                            min = point.distance(portal.location)
+                        if point.distance(portal.location) > max:
+                            max = point.distance(portal.location)
                             dest = point
                 self.moving_to[1] = dest
                 return dest
