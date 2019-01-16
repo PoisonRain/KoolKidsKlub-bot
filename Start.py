@@ -41,7 +41,7 @@ class Start:
     def __init__(self, game, elfDict):
         self.game = game
         self.my_elves = list(elfDict.values())
-        self.switch_sides = 1  # used to flip flop between direction the elves start to zigzag
+        self.switch_sides = -1  # used to flip flop between direction the elves start to zigzag
         self.zigDict = {}
     
     def do_start(self, game, elfDict):

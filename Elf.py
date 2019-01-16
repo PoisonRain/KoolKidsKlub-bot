@@ -16,23 +16,19 @@ class Elf:
     def move(self, dis):
         self.elf.move_to(dis)
 
-    def attack(self, tgt, ):  # walk to and attacks a target
-        if not self.elf.already_acted:
+    def attack(self, tgt):  # walk to and attacks a target
+        if tgt is not None and not self.elf.already_acted:
             if self.elf.in_attack_range(tgt):
-                self.attack(tgt)
+                self.elf.attack(tgt)
             else:
                 self.elf.move_to(tgt)
-        else:
-            print str(self.elf), " tried to build to attack but he already acted this turn"
 
     def build_portal(self, tgt):  # walks to and builds a portal at a location
-        if not self.elf.already_acted:
+        if tgt is not None and not self.elf.already_acted:
             if self.elf.in_attack_range(tgt):
                 self.attack(tgt)
             else:
                 self.elf.move_to(tgt)
-        else:
-            print str(self.elf), "tried to build a portal but he already acted this turn"
 
     def move_normal(self, tgt, dist, dir=None, srt=None):
         """
@@ -73,13 +69,12 @@ class Elf:
 
         pointA = Location(Yp1, Xp1)
         pointB = Location(Yp2, Xp2)
-        print str(self.elf) + "pointA: " + str(pointA) + " pointB: " + str(pointB)
 
         # check if you can build portal at pointA/B if not get a valid point:
         while not self.game.can_build_portal_at(pointA):
-            pointA = pointA.towards(my_castle, 100)
+            pointA = pointA.towards(my_castle, 5)
         while not self.game.can_build_portal_at(pointB):
-            pointB = pointB.towards(my_castle, 100)
+            pointB = pointB.towards(my_castle, 5)
 
         # choosing pointA or pointB:
         if dir is None:
