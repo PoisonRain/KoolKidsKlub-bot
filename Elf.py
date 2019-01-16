@@ -1,12 +1,11 @@
-"""
-elf class n shit
-"""
-
 from elf_kingdom import *
 import math
 
 
 class Elf:
+    """
+    elf class is used to remember previous elf state and have complex moving methods
+    """
     def __init__(self, game, elf):
         self.game = game
         self.elf = elf
@@ -16,6 +15,24 @@ class Elf:
 
     def move(self, dis):
         self.elf.move_to(dis)
+
+    def attack(self, tgt, ):  # walk to and attacks a target
+        if not self.elf.already_acted:
+            if self.elf.in_attack_range(tgt):
+                self.attack(tgt)
+            else:
+                self.elf.move_to(tgt)
+        else:
+            print str(self.elf), " tried to build to attack but he already acted this turn"
+
+    def build_portal(self, tgt):  # walks to and builds a portal at a location
+        if not self.elf.already_acted:
+            if self.elf.in_attack_range(tgt):
+                self.attack(tgt)
+            else:
+                self.elf.move_to(tgt)
+        else:
+            print str(self.elf), "tried to build a portal but he already acted this turn"
 
     def move_normal(self, tgt, dist, dir=None, srt=None):
         """
