@@ -183,21 +183,34 @@ def tuple_to_location(tup):
 
 pi = math.pi
 
-def points_on_circle(center,r,n=500): #default amount of points is 100
-    return [(math.cos(2*pi/n*x)*r+center[0],math.sin(2*pi/n*x)*r+center[1]) for x in range(0,n+1)]
+def points_on_circle(axis_limits,center,r,n=300): #default amount of points is 100
+    #return [(math.cos(2*pi/n*x)*r+center[0],math.sin(2*pi/n*x)*r+center[1]) 
+    #for x in range(0,n+1) if (axis_limits[0] > (math.cos(2*pi/n*x)*r+center[0] > 0 
+    #and axis_limits[1] > math.sin(2*pi/n*x)*r+center[1] > 0)] ##list comprehenshion way, invalid syntax
+    ret_list = []
+    for x in range(0,n+1):
+        row = math.cos(2*pi/n*x)*r+center[0]
+        col = math.sin(2*pi/n*x)*r+center[1]
+        if axis_limits[0] > row and row > 0 and axis_limits[1] > col and col > 0:
+            ret_list.append((math.cos(2*pi/n*x)*r+center[0] , math.sin(2*pi/n*x)*r+center[1]))
+    print ret_list
+    return ret_list
+
 
     
 elf_start = (0,0)
 points = []
-i = 200
+i = 0 #which point on the circle
 def do_turn(game):
     global points
     global i
+    global elf_start
+    global prev_a
+    
     enemy_castle = game.get_enemy_castle().location
     enemy_castle_loc_test = (enemy_castle.row, enemy_castle.col) 
     test_elf = game.get_my_living_elves()[0]
-    global elf_start
-    global prev_a
+    
     if game.turn <= 1:
         elf_start = (test_elf.location.row, test_elf.location.col)
        
@@ -208,10 +221,13 @@ def do_turn(game):
         print manuver_to
         center, radius = get_circle(elf_start, manuver_to, enemy_castle_loc_test)
         if points == []:
-            points = points_on_circle(center, radius)
+            points = points_on_circle((game.rows, game.cols),center, radius)
         else:
             print radius, center
             next_tuple = points[i]
-            i+=1
+            if i < len(points)-1:
+                i+=1
+            else:
+                i = 0
             next_point = Location(int(round(next_tuple[0])), int(round(next_tuple[1])))
             test_elf.move_to(next_point)
