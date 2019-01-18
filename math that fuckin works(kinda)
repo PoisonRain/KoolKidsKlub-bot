@@ -184,17 +184,17 @@ def tuple_to_location(tup):
 pi = math.pi
 
 def points_on_circle(axis_limits,center,r,n=300): #default amount of points is 100
-    #return [(math.cos(2*pi/n*x)*r+center[0],math.sin(2*pi/n*x)*r+center[1]) 
-    #for x in range(0,n+1) if (axis_limits[0] > (math.cos(2*pi/n*x)*r+center[0] > 0 
-    #and axis_limits[1] > math.sin(2*pi/n*x)*r+center[1] > 0)] ##list comprehenshion way, invalid syntax
-    ret_list = []
-    for x in range(0,n+1):
-        row = math.cos(2*pi/n*x)*r+center[0]
-        col = math.sin(2*pi/n*x)*r+center[1]
-        if axis_limits[0] > row and row > 0 and axis_limits[1] > col and col > 0:
-            ret_list.append((math.cos(2*pi/n*x)*r+center[0] , math.sin(2*pi/n*x)*r+center[1]))
-    print ret_list
-    return ret_list
+    return [(math.cos(2*pi/n*x)*r+center[0],math.sin(2*pi/n*x)*r+center[1]) 
+    for x in range(0,n+1) if (axis_limits[0] > math.cos(2*pi/n*x)*r+center[0] > 0 
+    and axis_limits[1] > math.sin(2*pi/n*x)*r+center[1] > 0)] ##list comprehenshion way, invalid syntax
+    # ret_list = []
+    # for x in range(0,n+1):
+    #     row = math.cos(2*pi/n*x)*r+center[0]
+    #     col = math.sin(2*pi/n*x)*r+center[1]
+    #     if axis_limits[0] > row and row > 0 and axis_limits[1] > col and col > 0:
+    #         ret_list.append((math.cos(2*pi/n*x)*r+center[0] , math.sin(2*pi/n*x)*r+center[1]))
+    # print ret_list
+    # return ret_list
 
 
     
