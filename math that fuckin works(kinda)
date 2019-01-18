@@ -7,7 +7,7 @@ from Normal import normal
 import math
 
 distance_to_avoid = 300  # magic num bluhhhhhh bad nu nu
-
+pi = math.pi
 
 def get_obstacle_distance_from_path(start_location, end_location,
                                     obstacle_location):  # recieve: start end and mid location return: distance of mid location from the path between the other two
@@ -64,19 +64,19 @@ def get_side_for_maneuver(start_location, end_location,
         else:
             return new_midpoint_location_minus
 
-def get_next_point(circle_location, prev_a, distance_to_move, radius_from_obstacle): #gets the circle center, previous degree of shift, distance of string on circle and radius of avoiding, returns the next point and the new shift degree
-#a,b = radius
-#c = length to move
-    prev_a = math.radians(prev_a) #turn from input degrees to radians for calc
-    a = math.acos((radius_from_obstacle ** 2 + radius_from_obstacle ** 2 - distance_to_move ** 2)/( 2 * radius_from_obstacle * radius_from_obstacle)) #cosine rule to get degree of shift, get the radians from x positive
-    a = a+prev_a
-    x = int(round(circle_location[0] + radius_from_obstacle * math.cos(a)))
-    y = int(round(circle_location[1] + radius_from_obstacle * math.sin(a)))
-    return (x,y) , math.degrees(a)
+# def get_next_point(circle_location, prev_a, distance_to_move, radius_from_obstacle): #gets the circle center, previous degree of shift, distance of string on circle and radius of avoiding, returns the next point and the new shift degree
+# #a,b = radius
+# #c = length to move
+#     prev_a = math.radians(prev_a) #turn from input degrees to radians for calc
+#     a = math.acos((radius_from_obstacle ** 2 + radius_from_obstacle ** 2 - distance_to_move ** 2)/( 2 * radius_from_obstacle * radius_from_obstacle)) #cosine rule to get degree of shift, get the radians from x positive
+#     a = a+prev_a
+#     x = int(round(circle_location[0] + radius_from_obstacle * math.cos(a)))
+#     y = int(round(circle_location[1] + radius_from_obstacle * math.sin(a)))
+#     return (x,y) , math.degrees(a)
 
-def get_degrees_from_point(point, circle_radius, circle_location):
-    a = math.acos((point[0] - circle_location[0])/circle_radius)
-    return math.degrees(a)
+# def get_degrees_from_point(point, circle_radius, circle_location):
+#     a = math.acos((point[0] - circle_location[0])/circle_radius)
+#     return math.degrees(a)
 
 def lineFromPoints(point1,point2):
     a = point2[0] - point1[0]
@@ -181,9 +181,13 @@ def location_to_tuple(loc):
 def tuple_to_location(tup):
     return Location(tup[0],tup[1])
 
-pi = math.pi
 
-def points_on_circle(axis_limits,center,r,n=300): #default amount of points is 100
+
+def points_on_circle(axis_limits,center,r, string_distance = 100): #n needs to be generated with a function using the radius
+ #this function needs to be used by finding the points closest to the wanted start and end locations, and running either forward
+ #or backwards on the list, depending on which side is shorter that way upping efficency
+    n = how_many_points_on_circle(r, string_distance) 
+    print str(n)+':n is'
     return [(math.cos(2*pi/n*x)*r+center[0],math.sin(2*pi/n*x)*r+center[1]) 
     for x in range(0,n+1) if (axis_limits[0] > math.cos(2*pi/n*x)*r+center[0] > 0 
     and axis_limits[1] > math.sin(2*pi/n*x)*r+center[1] > 0)] ##list comprehenshion way, invalid syntax
@@ -196,16 +200,39 @@ def points_on_circle(axis_limits,center,r,n=300): #default amount of points is 1
     # print ret_list
     # return ret_list
 
-
+def how_many_points_on_circle(radius, distance_to_move):
+    alpha = math.acos((radius ** 2 + radius ** 2 - distance_to_move ** 2)/
+    ( 2 * radius * radius)) #cosine rule to get degree of shift, get the radians from x positive
+    return int(round(360/math.degrees(alpha)))
     
 elf_start = (0,0)
 points = []
 i = 0 #which point on the circle
-def do_turn(game):
+
+def manuver_move(game, elf, enemy_castle_loc_test, end_loc):
     global points
     global i
     global elf_start
-    global prev_a
+    
+    manuver_to = get_side_for_maneuver(elf_start, enemy_castle_loc_test, end_loc)
+    print enemy_castle_loc_test
+    print elf_start
+    print manuver_to
+    center, radius = get_circle(elf_start, manuver_to, enemy_castle_loc_test)
+    if points == []:
+        points = points_on_circle((game.rows, game.cols),center, radius)
+    else:
+        print radius, center
+        next_tuple = points[i]
+        if i < len(points)-1:
+            i+=1
+        else:
+            i = 0
+        next_point = Location(int(round(next_tuple[0])), int(round(next_tuple[1])))
+        elf.move_to(next_point)
+            
+def do_turn(game):
+    global elf_start
     
     enemy_castle = game.get_enemy_castle().location
     enemy_castle_loc_test = (enemy_castle.row, enemy_castle.col) 
@@ -215,19 +242,4 @@ def do_turn(game):
         elf_start = (test_elf.location.row, test_elf.location.col)
        
     else:
-        manuver_to = get_side_for_maneuver(elf_start, enemy_castle_loc_test, (2200, 3000))
-        print enemy_castle_loc_test
-        print elf_start
-        print manuver_to
-        center, radius = get_circle(elf_start, manuver_to, enemy_castle_loc_test)
-        if points == []:
-            points = points_on_circle((game.rows, game.cols),center, radius)
-        else:
-            print radius, center
-            next_tuple = points[i]
-            if i < len(points)-1:
-                i+=1
-            else:
-                i = 0
-            next_point = Location(int(round(next_tuple[0])), int(round(next_tuple[1])))
-            test_elf.move_to(next_point)
+        manuver_move(game, test_elf, enemy_castle_loc_test, (2200, 3000))
