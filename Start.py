@@ -32,6 +32,7 @@ class Zigzag:
         else:
             elf.elf.move_to(self.to_go)
 
+
 class Start:
     """
     does all the start things
@@ -66,8 +67,3 @@ class Start:
         for uid in elfDict.keys():
             if uid in self.zigDict:
                 self.zigDict[uid].do_zig(elfDict[uid])
-            
-            
-        
-        
-        

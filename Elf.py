@@ -56,19 +56,24 @@ class Elf:
         Xb = tgt.col
         Yb = tgt.row
 
-        Mab = (Ya - Yb) // (Xa - Xb)
-        A = -Mab
-        B = 1
-        C = Mab * Xb - Yb
+        if Ya == Yb:
+            pointA = Location(Yb + dist, Xb)
+            pointB = Location(Yb - dist, Xb)
+        else:
+            Mab = (Ya - Yb) / (Xa - Xb)
+            A = -Mab
+            B = 1
+            C = Mab * Xb - Yb
 
-        Mbp = -(1 // Mab)
-        Xp1 = int((dist * math.sqrt(A * A + B * B) - C + Mbp * Xb - Yb) / (A + Mbp))
-        Yp1 = int(Mbp*Xp1 - Mbp*Xb + Yb)
-        Xp2 = int(((-dist) * math.sqrt(A * A + B * B) - C + Mbp * Xb - Yb) / (A + Mbp))
-        Yp2 = int(Mbp * Xp2 - Mbp * Xb + Yb)
+            Mbp = -(1 / Mab)
+            Xp1 = int((dist * math.sqrt(A * A + B * B) - C + Mbp * Xb - Yb) / (A + Mbp))
+            Yp1 = int(Mbp * Xp1 - Mbp * Xb + Yb)
+            Xp2 = int(((-dist) * math.sqrt(A * A + B * B) - C + Mbp * Xb - Yb) / (A + Mbp))
+            Yp2 = int(Mbp * Xp2 - Mbp * Xb + Yb)
 
-        pointA = Location(Yp1, Xp1)
-        pointB = Location(Yp2, Xp2)
+            pointA = Location(Yp1, Xp1)
+            pointB = Location(Yp2, Xp2)
+
 
         # check if you can build portal at pointA/B if not get a valid point:
         while not self.game.can_build_portal_at(pointA):
