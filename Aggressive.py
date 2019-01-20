@@ -13,7 +13,6 @@ class Aggressive:
         self.dirDict = {}
         self.old_my_portals = []
 
-
     def update_dirDict(self, elfDict):
         """
         gets updated elfDict checks for new entries gives them in an altering manner a direction to go
@@ -33,10 +32,11 @@ class Aggressive:
         """
         enemy_castle = self.game.get_enemy_castle()
         flanking_elves = []
+        amount_of_assigned_elves = 2
         distance_from_tgt = 900
 
-        if len(self.attackDict) < 2:  # if there are not enough portals
-            for elf in self.my_elves[0:2]:  # build portals with all elves (atm builds with only 1):
+        if len(self.attackDict) < amount_of_assigned_elves:  # if there are not enough portals
+            for elf in self.my_elves[0:amount_of_assigned_elves]:  # build portals with all assigned elves 
                 location_to_move = elf.move_normal(enemy_castle.location, distance_from_tgt, self.dirDict[elf.elf.unique_id])
                 if elf.elf.location.equals(location_to_move):  # check if elf is in designated location
                     if elf.elf.can_build_portal():  # if able to built portal
@@ -57,6 +57,7 @@ class Aggressive:
             enemy_trolls = self.game.get_enemy_ice_trolls()
             enemy_portals = self.game.get_enemy_portals()
             enemy_castle = self.game.get_enemy_castle()
+            my_castle = self.game.get_my_castle()
             enemy_is_close_dist = 350
             # check for nulls:
             if enemy_elves is None:
