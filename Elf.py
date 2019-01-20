@@ -30,7 +30,7 @@ class Elf:
             else:
                 self.elf.move_to(tgt)
 
-    def move_normal(self, tgt, dist, dir=None, srt=None):
+    def move_normal(self, tgt, dist, dir=None, srt=None, fix=None):
         """
         the elf (s) moves to a or b from :srt             a
         where e is designated point :tgt      -->   s-----e
@@ -40,6 +40,8 @@ class Elf:
         :param dist: The distance you want to go on the perpendicular line
         :param dir: The direction you prefer to go in (up, left) = 1, (down, right) = -1
         :param srt: Optional parameter, starting point; if not set is default to game.get_enemy_castle().location
+        :param fix: optional parameter if left None location will move to my_castle until portal is able to be build
+        else if set to 1 location will be moved towards tgt else if set to -1 location will be moved towards enemy_castle
         :return: The location the elf should go in
 
         """
@@ -49,32 +51,53 @@ class Elf:
 
         if srt is None:
             srt = self.game.get_my_castle().location
+
         my_castle = self.game.get_my_castle()
+        enemy_castle = self.game.get_enemy_castle()
 
-        Xa = srt.col
-        Ya = srt.row
-        Xb = tgt.col
-        Yb = tgt.row
+        Xa = float(srt.col)
+        Ya = float(srt.row)
+        Xb = float(tgt.col)
+        Yb = float(tgt.row)
 
-        Mab = (Ya - Yb) // (Xa - Xb)
-        A = -Mab
-        B = 1
-        C = Mab * Xb - Yb
+        if Ya == Yb:
+            pointA = Location(Yb + dist, Xb)
+            pointB = Location(Yb - dist, Xb)
+        else:
+            Mab = (Ya - Yb) / (Xa - Xb)
+            A = -Mab
+            B = 1
+            C = Mab * Xb - Yb
 
-        Mbp = -(1 // Mab)
-        Xp1 = int((dist * math.sqrt(A * A + B * B) - C + Mbp * Xb - Yb) / (A + Mbp))
-        Yp1 = int(Mbp*Xp1 - Mbp*Xb + Yb)
-        Xp2 = int(((-dist) * math.sqrt(A * A + B * B) - C + Mbp * Xb - Yb) / (A + Mbp))
-        Yp2 = int(Mbp * Xp2 - Mbp * Xb + Yb)
+            Mbp = -(1 / Mab)
+            Xp1 = int((dist * math.sqrt(A * A + B * B) - C + Mbp * Xb - Yb) / (A + Mbp))
+            Yp1 = int(Mbp * Xp1 - Mbp * Xb + Yb)
+            Xp2 = int(((-dist) * math.sqrt(A * A + B * B) - C + Mbp * Xb - Yb) / (A + Mbp))
+            Yp2 = int(Mbp * Xp2 - Mbp * Xb + Yb)
 
-        pointA = Location(Yp1, Xp1)
-        pointB = Location(Yp2, Xp2)
+            pointA = Location(Yp1, Xp1)
+            pointB = Location(Yp2, Xp2)
 
         # check if you can build portal at pointA/B if not get a valid point:
-        while not self.game.can_build_portal_at(pointA):
-            pointA = pointA.towards(my_castle, 5)
-        while not self.game.can_build_portal_at(pointB):
-            pointB = pointB.towards(my_castle, 5)
+        if fix == -1:
+            while not self.game.can_build_portal_at(pointA) and not pointA.equals(enemy_castle):
+                pointA = pointA.towards(enemy_castle, 5)
+            while not self.game.can_build_portal_at(pointB) and not pointB.equals(enemy_castle):
+                pointB = pointB.towards(enemy_castle, 5)
+            if pointA.equals(enemy_castle) or pointB.equals(enemy_castle):
+                print "REEE"
+        elif fix == 1:
+            while not self.game.can_build_portal_at(pointA) and not pointA.equals(tgt):
+                pointA = pointA.towards(tgt, 5)
+            while not self.game.can_build_portal_at(pointB) and not pointB.equals(tgt):
+                pointB = pointB.towards(tgt, 5)
+            if pointA.equals(tgt) or pointB.equals(tgt):
+                print "REEE"
+        else:
+            while not self.game.can_build_portal_at(pointA) and not pointA.equals(my_castle):
+                pointA = pointA.towards(my_castle, 5)
+            while not self.game.can_build_portal_at(pointB) and not pointB.equals(my_castle):
+                pointB = pointB.towards(my_castle, 5)
 
         # choosing pointA or pointB:
         if dir is None:

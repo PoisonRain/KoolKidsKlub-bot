@@ -7,7 +7,7 @@ class Aggressive:
     """
     def __init__(self, game, elfDict, attackDict):
         self.game = game
-        self.my_elves = list(elfDict.values())
+        self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]
         self.switch_sides = -1  # switching side on the normal line
         self.attackDict = list(attackDict.values())
         self.dirDict = {}
@@ -93,7 +93,7 @@ class Aggressive:
                 elf.attack(enemy_castle)
 
     def do_aggressive(self, game, elfDict, attackDict):
-        self.my_elves = list(elfDict.values())  # update self.my_elves
+        self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]  # update self.my_elves
         self.attackDict = list(attackDict.values())  # update self.attackDict
         self.game = game  # update self.game
         self.update_dirDict(elfDict)  # update dirDict
