@@ -56,7 +56,7 @@ class Zigzag:
                     self.switch_sides = 1
 
     def do_zigzag(self, game, elfDict):
-        self.game = gam
+        self.game = game
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]
         amount_of_zigzag_elves = 1
 

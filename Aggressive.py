@@ -30,7 +30,7 @@ class Aggressive:
         """
         build portals at the designated flanking points
         """
-        def closest_attacl_portal(elf):
+        def closest_attack_portal(elf):
             elf = elf.elf
             min = self.game.rows = self.game.cols
             for portal in self.attackDict:
@@ -46,18 +46,17 @@ class Aggressive:
         distance_from_tgt = 900
         if len(self.my_elves) < amount_of_assigned_elves:  # check if the amount of elves i want to assign is to big
             amount_of_assigned_elves = len(self.my_elves)
-        elves_by_distance = sorted(self.my_elves, key=closest_attacl_portal, reverse=True)
+        elves_by_distance = sorted(self.my_elves, key=closest_attack_portal, reverse=True)
 
-        if len(self.attackDict) < attack_portal_amount:  # if there are not enough portals
-            for elf in elves_by_distance[0:amount_of_assigned_elves]:  # build portals with all assigned elves
-                location_to_move = elf.move_normal(enemy_castle.location, distance_from_tgt, self.dirDict[elf.elf.unique_id])
-                if elf.elf.location.equals(location_to_move):  # check if elf is in designated location
-                    if elf.elf.can_build_portal():  # if able to built portal
-                        elf.elf.build_portal()
-                        elf.was_building = True
-                else:  # if not at location to build move to the location
-                    elf.move(location_to_move)
-                flanking_elves.append(elf)
+        for elf in elves_by_distance[0:amount_of_assigned_elves]:  # build portals with all assigned elves
+            location_to_move = elf.move_normal(enemy_castle.location, distance_from_tgt, self.dirDict[elf.elf.unique_id])
+            if elf.elf.location.equals(location_to_move):  # check if elf is in designated location
+                if elf.elf.can_build_portal():  # if able to built portal
+                    elf.elf.build_portal()
+                    elf.was_building = True
+            else:  # if not at location to build move to the location
+                elf.move(location_to_move)
+            flanking_elves.append(elf)
         return flanking_elves
 
     def attack(self):
