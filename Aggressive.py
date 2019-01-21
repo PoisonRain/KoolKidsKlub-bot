@@ -30,13 +30,26 @@ class Aggressive:
         """
         build portals at the designated flanking points
         """
+        def closest_attacl_portal(elf):
+            elf = elf.elf
+            min = self.game.rows = self.game.cols
+            for portal in self.attackDict:
+                dist = elf.location.distance(portal)
+                if dist < min:
+                    min = dist
+            return min
+
         enemy_castle = self.game.get_enemy_castle()
         flanking_elves = []
-        amount_of_assigned_elves = 2
+        attack_portal_amount = 2
+        amount_of_assigned_elves = attack_portal_amount - len(self.attackDict)
         distance_from_tgt = 900
+        if len(self.my_elves) < amount_of_assigned_elves:  # check if the amount of elves i want to assign is to big
+            amount_of_assigned_elves = len(self.my_elves)
+        elves_by_distance = sorted(self.my_elves, key=closest_attacl_portal, reverse=True)
 
-        if len(self.attackDict) < amount_of_assigned_elves:  # if there are not enough portals
-            for elf in self.my_elves[0:amount_of_assigned_elves]:  # build portals with all assigned elves 
+        if len(self.attackDict) < attack_portal_amount:  # if there are not enough portals
+            for elf in elves_by_distance[0:amount_of_assigned_elves]:  # build portals with all assigned elves
                 location_to_move = elf.move_normal(enemy_castle.location, distance_from_tgt, self.dirDict[elf.elf.unique_id])
                 if elf.elf.location.equals(location_to_move):  # check if elf is in designated location
                     if elf.elf.can_build_portal():  # if able to built portal
@@ -103,7 +116,9 @@ class Aggressive:
 
         self.attack()
 
-        for portal in self.attackDict:  # spam lava giants
+        for portal in self.attackDict:  # spam lava giants while mana above 60
+            if (game.get_my_mana() - 40) < 60:
+                break
             if not portal.is_summoning:
                 portal.summon_lava_giant()
 

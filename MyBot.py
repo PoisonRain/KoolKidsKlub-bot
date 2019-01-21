@@ -1,6 +1,6 @@
 from elf_kingdom import *
 from Elf import *
-from Start import start
+from Start import Start
 from Aggressive import Aggressive
 from Normal import normal
 
@@ -15,6 +15,7 @@ srtI = None
 
 def update_attackDict(my_elves, my_portals):
     global attackDict, old_my_portals
+    attack_portal = None
     if my_portals:
         for uid in attackDict.keys():  # delete destroyed portals
             if uid not in [portal.unique_id for portal in my_portals]:
@@ -56,7 +57,7 @@ def must_have_portals(elfDict):
 
 def do_turn(game):
         # vars
-        global elfDict, attackDict, agrI, old_my_portals
+        global elfDict, attackDict, agrI, old_my_portals, srtI
         my_elves = game.get_my_living_elves()
         my_portals = game.get_my_portals()
         enemy_castle = game.get_enemy_castle()
@@ -64,6 +65,8 @@ def do_turn(game):
         flank_elves = []  # list of all elves that try to flank and build a portal
         if agrI is None:
             agrI = Aggressive(game, elfDict, attackDict)
+        if srtI is None:
+            srtI = Start(game, elfDict)
 
         update_elfDict(game, my_elves)  # update elfDict
 
@@ -73,7 +76,7 @@ def do_turn(game):
 
         # choosing an attack mode:
         if not alreadyNormal and len(my_portals) < 7 and game.turn < (my_castle.location.distance(enemy_castle) / 50):
-            start(game, elfDict)
+            srtI.do_start(game, elfDict)
         elif must_have_portals(my_portals) and ((game.get_enemy_mana() < 100 and my_castle.current_health > 75) or (enemy_castle.current_health and my_castle.current_health > 75)):
             flank_elves = agrI.do_aggressive(game, elfDict, attackDict)
         else:
