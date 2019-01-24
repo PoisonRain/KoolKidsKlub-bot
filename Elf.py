@@ -78,26 +78,29 @@ class Elf:
             pointA = Location(Yp1, Xp1)
             pointB = Location(Yp2, Xp2)
 
-        # check if you can build portal at pointA/B if not get a valid point:
+        def out_of_boundaries(game, loc, dist):
+            if loc.row > game.rows - dist or loc.row < dist:
+                return False
+            elif loc.col > game.cols - dist or loc.col < dist:
+                return False
+            else:
+                return True
+
+        def check_if_able_to_build(loc):  # check if able to build a portal if not move the point over
+            global pointA, pointB
+            while not self.game.can_build_portal_at(pointA) and not pointA.equals(loc) and out_of_boundaries(self.game, pointA, 50):
+                pointA = pointA.towards(loc, 5)
+            while not self.game.can_build_portal_at(pointB) and not pointB.equals(loc) and out_of_boundaries(self.game, pointB, 50):
+                pointB = pointB.towards(loc, 5)
+            if pointA.equals(loc) or pointB.equals(loc):
+                print "REEE"
+
         if fix == -1:
-            while not self.game.can_build_portal_at(pointA) and not pointA.equals(enemy_castle):
-                pointA = pointA.towards(enemy_castle, 5)
-            while not self.game.can_build_portal_at(pointB) and not pointB.equals(enemy_castle):
-                pointB = pointB.towards(enemy_castle, 5)
-            if pointA.equals(enemy_castle) or pointB.equals(enemy_castle):
-                print "REEE"
+            check_if_able_to_build(enemy_castle)
         elif fix == 1:
-            while not self.game.can_build_portal_at(pointA) and not pointA.equals(tgt):
-                pointA = pointA.towards(tgt, 5)
-            while not self.game.can_build_portal_at(pointB) and not pointB.equals(tgt):
-                pointB = pointB.towards(tgt, 5)
-            if pointA.equals(tgt) or pointB.equals(tgt):
-                print "REEE"
+            check_if_able_to_build(tgt)
         else:
-            while not self.game.can_build_portal_at(pointA) and not pointA.equals(my_castle):
-                pointA = pointA.towards(my_castle, 5)
-            while not self.game.can_build_portal_at(pointB) and not pointB.equals(my_castle):
-                pointB = pointB.towards(my_castle, 5)
+            check_if_able_to_build(my_castle)
 
         # choosing pointA or pointB:
         if dir is None:
