@@ -1,5 +1,5 @@
 from elf_kingdom import *
-import math
+from math import sqrt
 
 
 class Elf:
@@ -45,38 +45,27 @@ class Elf:
         :return: The location the elf should go in
 
         """
-        #if self.moving_to[0] == tgt:  # if the elf has the same target go to the previously calculated location
-        #    return self.moving_to[1]
-        #self.moving_to[0] = tgt
-
+        global pointA, pointB
         if srt is None:
             srt = self.game.get_my_castle().location
 
         my_castle = self.game.get_my_castle()
         enemy_castle = self.game.get_enemy_castle()
 
-        Xa = float(srt.col)
-        Ya = float(srt.row)
-        Xb = float(tgt.col)
-        Yb = float(tgt.row)
+        x_a, y_a = float(tgt.col), float(tgt.row)
+        x_b, y_b = float(srt.col), float(srt.row)
 
-        if Ya == Yb:
-            pointA = Location(Yb + dist, Xb)
-            pointB = Location(Yb - dist, Xb)
-        else:
-            Mab = (Ya - Yb) / (Xa - Xb)
-            A = -Mab
-            B = 1
-            C = Mab * Xb - Yb
+        x_d, y_d = x_a - x_b, y_a - y_b
+        d = sqrt(x_d ** 2 + y_d ** 2)
 
-            Mbp = -(1 / Mab)
-            Xp1 = int((dist * math.sqrt(A * A + B * B) - C + Mbp * Xb - Yb) / (A + Mbp))
-            Yp1 = int(Mbp * Xp1 - Mbp * Xb + Yb)
-            Xp2 = int(((-dist) * math.sqrt(A * A + B * B) - C + Mbp * Xb - Yb) / (A + Mbp))
-            Yp2 = int(Mbp * Xp2 - Mbp * Xb + Yb)
+        x_d /= d
+        y_d /= d
 
-            pointA = Location(Yp1, Xp1)
-            pointB = Location(Yp2, Xp2)
+        x_1, y_1 = x_a + dist * y_d, y_a - dist * x_d
+        x_2, y_2 = x_a - dist * y_d, y_a + dist * x_d
+
+        pointA = Location(int(y_1), int(x_1))
+        pointB = Location(int(y_2), int(x_2))
 
         def out_of_boundaries(game, loc, dist):
             if loc.row > game.rows - dist or loc.row < dist:
