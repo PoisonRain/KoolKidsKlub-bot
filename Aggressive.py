@@ -9,7 +9,7 @@ class Aggressive:
     def __init__(self, game, elfDict, attackDict):
         self.game = game
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]
-        self.switch_sides = -1  # switching side on the normal line
+        self.switch_sides = 1  # switching side on the normal line
         self.attackDict = list(attackDict.values())
         self.dirDict = {}
         self.old_my_portals = []
@@ -34,7 +34,7 @@ class Aggressive:
         """
         def closest_attack_portal(elf):
             elf = elf.elf
-            min = 100000000
+            min = 10 ** 100
             for portal in self.attackDict:
                 dist = elf.location.distance(portal)
                 if dist < min:
@@ -45,7 +45,7 @@ class Aggressive:
         flanking_elves = []
         attack_portal_amount = 2
         amount_of_assigned_elves = attack_portal_amount - len(self.attackDict)
-        distance_from_tgt = 900
+        distance_from_tgt = 600
         if len(self.my_elves) < amount_of_assigned_elves:  # check if the amount of elves i want to assign is to big
             amount_of_assigned_elves = len(self.my_elves)
         elves_by_distance = sorted(self.my_elves, key=closest_attack_portal, reverse=True)
@@ -170,9 +170,9 @@ class Aggressive:
         def check_if_able_to_build(loc):  # check if able to build a portal if not move the point over
             global pointA, pointB
             while not game.can_build_portal_at(pointA) and not pointA.equals(loc) and in_boundaries(game, pointA, 50):
-                pointA = pointA.towards(loc, 5)
+                pointA = pointA.towards(loc, 10)
             while not game.can_build_portal_at(pointB) and not pointB.equals(loc) and in_boundaries(game, pointB, 50):
-                pointB = pointB.towards(loc, 5)
+                pointB = pointB.towards(loc, 10)
             if pointA.equals(loc) or pointB.equals(loc):
                 print "REEE"
 
