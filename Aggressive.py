@@ -1,4 +1,5 @@
 from elf_kingdom import *
+from math import sqrt
 
 
 class Aggressive:
@@ -18,21 +19,22 @@ class Aggressive:
         gets updated elfDict checks for new entries gives them in an altering manner a direction to go
         and deletes dead elves from the dictionary
         """
-        for uid in elfDict.keys():
+        for uid in elfDict.keys():  # add new
             if uid not in self.dirDict:
                 self.dirDict[uid] = self.switch_sides
-                if self.switch_sides == 1:
-                    self.switch_sides = -1
-                else:
-                    self.switch_sides = 1
+                self.switch_sides *= -1
 
-    def build_portals(self):
+        for uid in self.dirDict.keys():  # delete old
+            if uid not in elfDict:
+                del self.dirDict[uid]
+
+    def build_portals(self, game):
         """
         build portals at the designated flanking points
         """
         def closest_attack_portal(elf):
             elf = elf.elf
-            min = self.game.rows = self.game.cols
+            min = 100000000
             for portal in self.attackDict:
                 dist = elf.location.distance(portal)
                 if dist < min:
@@ -49,7 +51,7 @@ class Aggressive:
         elves_by_distance = sorted(self.my_elves, key=closest_attack_portal, reverse=True)
 
         for elf in elves_by_distance[0:amount_of_assigned_elves]:  # build portals with all assigned elves
-            location_to_move = elf.move_normal(enemy_castle.location, distance_from_tgt, self.dirDict[elf.elf.unique_id])
+            location_to_move = self.move_normal(game, enemy_castle.location, distance_from_tgt, self.dirDict[elf.elf.unique_id])
             if elf.elf.location.equals(location_to_move):  # check if elf is in designated location
                 if elf.elf.can_build_portal():  # if able to built portal
                     elf.elf.build_portal()
@@ -59,7 +61,7 @@ class Aggressive:
             flanking_elves.append(elf)
         return flanking_elves
 
-    def attack(self):
+    def attack(self, game):
         """
         attacks or runs away with the elves
         """
@@ -108,12 +110,11 @@ class Aggressive:
     def do_aggressive(self, game, elfDict, attackDict):
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]  # update self.my_elves
         self.attackDict = list(attackDict.values())  # update self.attackDict
-        self.game = game  # update self.game
         self.update_dirDict(elfDict)  # update dirDict
 
-        flanking_elves = self.build_portals()  # i mean basically build flanking portals
+        flanking_elves = self.build_portals(game)  # i mean basically build flanking portals
 
-        self.attack()
+        self.attack(game)
 
         for portal in self.attackDict:  # spam lava giants while mana above 60
             if (game.get_my_mana() - 40) < 60:
@@ -122,4 +123,85 @@ class Aggressive:
                 portal.summon_lava_giant()
 
         return flanking_elves
+
+    @staticmethod
+    def move_normal(game, tgt, dist, dir=None, srt=None, fix=None):
+        """
+        the elf (s) moves to a or b from :srt             a
+        where e is designated point :tgt      -->   s-----e
+        the distance from e to a|b is :dist               b
+
+        :param tgt: The point where you make a normal line to you
+        :param dist: The distance you want to go on the perpendicular line
+        :param dir: The direction you prefer to go in (up, left) = 1, (down, right) = -1
+        :param srt: Optional parameter, starting point; if not set is default to game.get_enemy_castle().location
+        :param fix: optional parameter if left None location will move to my_castle until portal is able to be build
+        else if set to 1 location will be moved towards tgt else if set to -1 location will be moved towards enemy_castle
+        :return: The location the elf should go in
+
+        """
+        global pointA, pointB
+        if srt is None:
+            srt = game.get_my_castle().location
+
+        my_castle = game.get_my_castle()
+        enemy_castle = game.get_enemy_castle()
+
+        x_a, y_a = float(tgt.col), float(tgt.row)
+        x_b, y_b = float(srt.col), float(srt.row)
+
+        x_d, y_d = x_a - x_b, y_a - y_b
+        d = sqrt(x_d ** 2 + y_d ** 2)
+
+        x_d /= d
+        y_d /= d
+
+        x_1, y_1 = x_a + dist * y_d, y_a - dist * x_d
+        x_2, y_2 = x_a - dist * y_d, y_a + dist * x_d
+
+        pointA = Location(int(y_1), int(x_1))
+        pointB = Location(int(y_2), int(x_2))
+
+        def in_boundaries(game, loc, dist):
+            if (dist < loc.row < game.rows - dist) and (dist < loc.col < game.cols - dist):
+                return True
+            return False
+
+        def check_if_able_to_build(loc):  # check if able to build a portal if not move the point over
+            global pointA, pointB
+            while not game.can_build_portal_at(pointA) and not pointA.equals(loc) and in_boundaries(game, pointA, 50):
+                pointA = pointA.towards(loc, 5)
+            while not game.can_build_portal_at(pointB) and not pointB.equals(loc) and in_boundaries(game, pointB, 50):
+                pointB = pointB.towards(loc, 5)
+            if pointA.equals(loc) or pointB.equals(loc):
+                print "REEE"
+
+        if fix == -1:
+            check_if_able_to_build(enemy_castle)
+        elif fix == 1:
+            check_if_able_to_build(tgt)
+        else:
+            check_if_able_to_build(my_castle)
+
+        # choosing pointA or pointB:
+        if dir is None:
+            enemy_portals = game.get_enemy_castle()
+            dest = pointA
+            max = 0
+            if enemy_portals:
+                for point in [pointA, pointB]:
+                    for portal in enemy_portals:
+                        if point.distance(portal.location) > max:
+                            max = point.distance(portal.location)
+                            dest = point
+                return dest
+
+            else:
+                return pointA
+        elif dir == 1:
+            return pointA
+        elif dir == -1:
+            return pointB
+        else:
+            return pointA
 
