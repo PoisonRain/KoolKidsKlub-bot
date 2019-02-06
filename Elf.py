@@ -32,17 +32,16 @@ class Elf:
                 self.elf.move_to(tgt)
                 
     
-    def manuver_move(game, elf, start_location, end_loc, flank_distance, obstacle_locations):#recieves locations, objects and distances and performs the flanking
+    def manuver_move(self, game, dest, obstacle_locations, flank_distance=500):#recieves locations, objects and distances and performs the flanking
         """
         puts all the functions to use and actually sends commands to the elf
-   
-        :param elf: the elf moving
-        :param start_location: the location the manuver started at(where the function was first called)
-        :param end_loc: the target location 
+        :param game: game instance
+        :param dest: destination
         :param flank_distance: how far from the obstacle should the elf swerve
-        :list obstacle_locations: a list of all the locations of the obstacles to avoid(in tuple form)
+        :param obstacle_locations: a list of all the locations of the obstacles to avoid(in tuple form)
         """
-        flanking.manuver_move(game, elf, start_location, end_loc, flank_distance, obstacle_locations)
+        obstacle_list = [flanking.location_to_tuple(x) for x in obstacle_locations]
+        flanking.manuver_move(game, self.elf, flanking.location_to_tuple(self.elf.location) , flanking.location_to_tuple(dest) , flank_distance, obstacle_list)
 
     def move_normal(self, tgt, dist, dir=None, srt=None, fix=None):
         """
