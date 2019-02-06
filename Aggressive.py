@@ -9,7 +9,7 @@ class Aggressive:
     def __init__(self, game, elfDict, attackDict):
         self.game = game
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]
-        self.switch_sides = -1  # switching side on the normal line
+        self.switch_sides = 1  # switching side on the normal line
         self.attackDict = list(attackDict.values())
         self.dirDict = {}
         self.old_my_portals = []
@@ -181,7 +181,7 @@ class Aggressive:
         elif fix == 1:
             check_if_able_to_build(tgt)
         else:
-            check_if_able_to_build(my_castle) 
+            check_if_able_to_build(my_castle)
 
         # choosing pointA or pointB:
         if dir is None:
