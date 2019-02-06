@@ -6,9 +6,11 @@ class Elf:
     """
     elf class is used to remember previous elf state and have complex moving methods
     """
-    def __init__(self, game, elf):
+    def __init__(self, game, elf, rows, cols):
         self.game = game
         self.elf = elf
+        self.rows = rows
+        self.cols = cols
         # used to remember where the user designated the elf to go last turn and where he actually went:
         self.moving_to = [Location(0,0), Location(0,0)]  # (user input, elf target)
         self.was_building = None  # used to check if the elf was building the previous turn
@@ -68,9 +70,9 @@ class Elf:
         pointB = Location(int(y_2), int(x_2))
 
         def out_of_boundaries(game, loc, dist):
-            if loc.row > game.rows - dist or loc.row < dist:
+            if loc.row > self.rows - dist or loc.row < dist:
                 return False
-            elif loc.col > game.cols - dist or loc.col < dist:
+            elif loc.col > self.cols - dist or loc.col < dist:
                 return False
             else:
                 return True

@@ -39,7 +39,7 @@ def update_elfDict(game, my_elves):
     if my_elves:  # add new and delete old elves from the dictionary
         for elf in my_elves:  # add new
             if elf.unique_id not in elfDict.keys():
-                elfDict[elf.unique_id] = Elf(game, elf)
+                elfDict[elf.unique_id] = Elf(game, elf, game.rows, game.cols)
 
         for uid in elfDict.keys():  # delete old
             if uid not in [elf.unique_id for elf in my_elves]:
@@ -48,7 +48,7 @@ def update_elfDict(game, my_elves):
         elfDict.clear()
 
     for elf in elfDict.values():  # update game for all elf objects
-        elf.game = game
+        elf.game, elf.rows, elf.cols = game, game.rows, game.cols
 
 
 def must_have_portals(elfDict):
