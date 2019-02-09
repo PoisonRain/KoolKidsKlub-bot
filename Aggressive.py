@@ -109,4 +109,3 @@ class Aggressive:
                 portal.summon_lava_giant()
 
         return flanking_elves
-
