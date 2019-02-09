@@ -2,7 +2,8 @@ from elf_kingdom import *
 from Elf import *
 from Start import Start
 from Aggressive import Aggressive
-from Normal import normal
+from Normal import Normal
+from Portals import *
 import flanking
 
 elfDict = {}  # key: elf unique id; value: Elf instance
@@ -58,7 +59,7 @@ def must_have_portals(elfDict):
 
 def do_turn(game):
         # vars
-        global elfDict, attackDict, agrI, old_my_portals
+        global elfDict, attackDict, agrI, old_my_portals, nrmI
         my_elves = game.get_my_living_elves()
         my_portals = game.get_my_portals()
         enemy_castle = game.get_enemy_castle()
@@ -66,6 +67,9 @@ def do_turn(game):
         flank_elves = []  # list of all elves that try to flank and build a portal
         if agrI is None:
             agrI = Aggressive(game, elfDict, attackDict)
+
+        if nrmI is None:
+            nrmI = Normal(game, elfDict, attackDict)
         
 
         if game.turn == 1:

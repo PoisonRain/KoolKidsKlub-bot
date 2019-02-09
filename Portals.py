@@ -6,6 +6,7 @@ class Portals():
     """
     class for portals contain stuff like enemies around portal and other usful funcs
     defend castle with mana cap, attack using given portal list + mana cap using attack list (ie: lava,lava,ice)
+    + utility stuffz we might use
     """
 
     def __init__(self, game, portals):
@@ -35,7 +36,7 @@ class Portals():
                     ice_trolls += 1
                 elif creature.type == "LavaGiant":
                     lava_giants += 1
-        return (lava_giants,elfs,ice_trolls)
+        return lava_giants, elfs, ice_trolls
 
     def closest_portals_sorted(self, point):
         """return a sorted list of the portals closest to the given point"""
@@ -51,21 +52,22 @@ class Portals():
         enemy_lava = self.game.get_enemy_lava_giants()
         count = 0
         lavas_inrange = []
-        for lava in enemy_lava: # get lavas in a certain range and put em in a list + count
+        for lava in enemy_lava:  # get lavas in a certain range and put em in a list + count
             if self.game.get_my_castle().distance(lava) < CASTLE_DEFENSE_RANGE:
                 lavas_inrange.append(lava)
                 count += 1
-        for ice in self.game.get_my_ice_trolls(): # for each lava subtract an ice so prevent spam
+        for ice in self.game.get_my_ice_trolls():  # for each lava subtract an ice so prevent spam
             if self.game.get_my_castle().distance(ice) < CASTLE_DEFENSE_RANGE:
                 count -= 1
         closest_portals = self.closest_portals_sorted(self.game.get_my_castle())
-        if len(closest_portals) == 0: # exit if we have no defense portals
+        if len(closest_portals) == 0:  # exit if we have no defense portals
             return
-        for i in range(count/ICE_TO_LAVA_RATIO): # find the closest portal to lava giant that isnt further than the castle
-            if self.game.get_my_mana() < mana_cap:
+        for i in range(count/ICE_TO_LAVA_RATIO):  # summon ice golems in a ratio according to how many ice we already
+            # have and how many lava there are near the castle
+            if self.game.get_my_mana() < mana_cap:  # exit if we dont have enough mana
                 return
             portal = closest_portals[0]
-            for p in closest_portals[1:]:
+            for p in closest_portals[1:]:  # find the closest portal to lava giant that isnt further than the castle
                 if (p.distance(lavas_inrange[i]) < portal.distance(lava[i])
                         and p.distance(self.game.get_my_castle()) < lavas_inrange[i].distance(self.game.get_my_castle()) and p.can_summon_ice_troll()):
                     portal = p
@@ -79,34 +81,35 @@ class Portals():
             if self.attackList.check_next() == "lava":  # check what is next to summon on attack list and summon it
                 if portal.can_summon_lava_giant():
                     portal.summon_lava_giant()
-                    self.attackList.get_next()
-            if self.attackList.check_next() == "ice":
+                    self.attackList.get_next()  # move the list index forward
+            if self.attackList.check_next() == "ice":  # same but with ice
                 if portal.can_summon_ice_troll():
                     portal.summon_ice_troll()
-                    self.attackList.get_next()  # move the list index forward
+                    self.attackList.get_next()
 
 
 class Attack_List():
-    """func for the list of which creatures to spawn in which order, restets index every X turns"""
+    """func for the list of which creatures to spawn in which order, restets index every X turns we dont spawn anything
+    to attack with as that marks the end of an attack"""
 
     def __init__(self):
-        self.a_list = ["lava", "lava", "ice"]
-        self.location = 0
-        self.turn_counter = 0
+        self.a_list = ["lava", "lava", "ice"]  # edit this to customize the list, we need to refine it
+        self.index = 0  # index of the list
+        self.turn_counter = 0  # counts turns and to reset index if an attack is over
 
     def check_next(self):  # return next creature to spawn without changing index
-        return self.a_list[self.location]
+        return self.a_list[self.index]
 
     def get_next(self):
         """ return next creature to spawn + changing the index to point to the next one on the list"""
-        self.location += 1
-        if self.location > len(self.a_list):  # reset location to start of list if spawned last creature
-            self.location = 0
-        self.turn_counter = 0
-        return self.a_list[self.location - 1]
+        self.index += 1
+        if self.index > len(self.a_list):  # reset location to start of list if spawned last creature
+            self.index = 0
+        self.turn_counter = 0  # we attacked so reset the counter checking how long have passed since last attack
+        return self.a_list[self.index - 1]
 
     def update_turns(self):
         """update turns passed since last call and reset location if too long passed"""
-        if self.turn_counter > 6:
-            self.location = 0
+        if self.turn_counter > 10:  # resets index because the attack is over
+            self.index = 0
         self.turn_counter += 1

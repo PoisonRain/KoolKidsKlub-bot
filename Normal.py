@@ -1,6 +1,7 @@
 from elf_kingdom import *
 from Portals import *
 
+# constants
 DEFENSE_MANA_CAP = 60  # limit to when we stop defending due to low mana
 MANE_DRAIN_RANGE = 1500  # the distance of checking if there is a creature in range of the enemy castel we dont want to spawn from
 LAVA_DRAIN_MANA_LIMIT = 100  # needs tweaking of course
@@ -23,9 +24,9 @@ class Normal:
         """do everything that normal needs to do"""
         self.normal_update(game, elfDict, attackDict)
 
-        self.build_portals() # build the flanking poratls, might need to be in an if with mana and our elfs taken into account
+        self.build_portals()  # build the flanking poratls, might need to be in an if with mana and our elfs taken into account
 
-        self.normal_defense()
+        self.normal_defense()  # defend the castle (if there are enemies in range)
 
         if self.game.get_my_mana() >= LAVA_DRAIN_MANA_LIMIT:  # drain enemy mana if our mana is above our set limite
             self.normal_enemy_mana_drain(attack_portals)
@@ -34,6 +35,7 @@ class Normal:
                                                                 # on mana and we have enough.
 
     def normal_defense(self):
+        """defend the castle if are above the mana cap using the Portals class"""
         if self.game.get_my_mana() > DEFENSE_MANA_CAP:
             self.portals.portals_defend_castle(DEFENSE_MANA_CAP)
 
