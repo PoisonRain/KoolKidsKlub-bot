@@ -1,6 +1,6 @@
 from elf_kingdom import *
 from Elf import *
-from Start import start
+from Start import Start
 from Aggressive import Aggressive
 from Normal import normal
 import flanking
@@ -14,7 +14,7 @@ agrI = None
 srtI = None
 
 
-def update_attackDict(my_elves, my_portals):
+def update_attackDict(game, my_elves, my_portals):
     global attackDict, old_my_portals
     attack_portal = None
     if my_portals:
@@ -25,7 +25,7 @@ def update_attackDict(my_elves, my_portals):
         for elf in my_elves:  # add new attack portals
             if elf.elf.is_building is False and elf.was_building is True:
                 for portal in my_portals:
-                    if portal not in old_my_portals:
+                    if portal not in old_my_portals and portal.location.distance(enemy_castle) < max_dist_from_castle:
                         attack_portal = portal
                         break
                 if attack_portal is not None:
@@ -86,7 +86,7 @@ def do_turn(game):
         #else:
         #    flank_elves = normal(game, elfDict)
 
-        update_attackDict(flank_elves, my_portals)  # updating attackDict
+        update_attackDict(game, flank_elves, my_portals)  # updating attackDict
 
         old_my_portals = my_portals  # update old_my_portals
 

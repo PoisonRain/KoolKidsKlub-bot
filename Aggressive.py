@@ -67,6 +67,7 @@ class Aggressive:
         """
         for elf in [elf for elf in self.my_elves if not elf.elf.already_acted]:
             enemy_close = False
+            my_castle = self.game.get_my_castle()
             enemy_elves = self.game.get_enemy_living_elves()
             enemy_trolls = self.game.get_enemy_ice_trolls()
             enemy_portals = self.game.get_enemy_portals()
