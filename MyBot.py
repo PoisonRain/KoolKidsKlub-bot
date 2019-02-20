@@ -5,6 +5,7 @@ from Aggressive import Aggressive
 from Normal import Normal
 from Defense import Defense
 import flanking
+from BF import BF
 
 # old state:
 old_my_castle_health_3_turns = []
@@ -42,7 +43,7 @@ def update_attackDict(game, my_elves, my_portals):
         attackDict.clear()
 
 
-def update_elfDict(game, my_elves):
+def update_elfDict(game, my_elves, BF):
     global elfDict
     if my_elves:  # add new and delete old elves from the dictionary
         for elf in my_elves:  # add new
@@ -57,6 +58,7 @@ def update_elfDict(game, my_elves):
 
     for elf in elfDict.values():  # update game for all elf objects
         elf.game = game
+        elf.BF = BF
 
 
 def must_have_portals(game, elfDict):
@@ -96,11 +98,12 @@ def do_turn(game):
         nrmI = Normal(game, elfDict, attackDict, agrI)
     if defI is None:
         defI = Defense(game, elfDict)
+    BF_inst = BF(game, 500, game.get_enemy_portals())
 
     if game.turn == 1:
         flanking.initialize(my_elves)
 
-    update_elfDict(game, my_elves)  # update elfDict
+    update_elfDict(game, my_elves, BF_inst)  # update elfDict
 
     # fix None
     if my_portals is None:  # sets list to list if its null

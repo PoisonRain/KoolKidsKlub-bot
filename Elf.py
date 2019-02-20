@@ -1,6 +1,7 @@
 from elf_kingdom import *
 from math import sqrt
 import flanking
+from BF import BF
 
 
 class Elf:
@@ -15,6 +16,7 @@ class Elf:
         self.was_building = None  # used to check if the elf was building the previous turn
         self.start_manuver = elf.location
         self.dest_manuver = None
+        self.BF = None
         self.old_health_2_turns = []
 
     def move(self, dest):
@@ -34,7 +36,22 @@ class Elf:
             else:
                 self.elf.move_to(tgt)
 
-    def manuver_move(self, game, dest, obstacle_list, flank_distance=1000):
+    def maneuver_move(self, dest, factor, move=True, new_obstacles=None, evo_rad=None):
+        """
+        moves the elf in the fastest free of obstacles way
+        :param dest: the final destination
+        :param factor: the factor of coverage an needed for a rect to be considered unsafe
+        :param move: bool - True moves the elf False only return the location
+        :param new_obstacles: needed if you want to create a custom obstacle list NOTE that take more runtime
+        :param evo_rad: needed if you want to create a custom obstacle list NOTE that take more runtime
+        :return: is move set to False return the desired location to which you should move
+        """
+        if new_obstacles is not None:
+            self.BF.maneuver(self.elf, dest, factor, move)
+        else:
+            BF(self.game, evo_rad, new_obstacles).maneuver(dest, factor, move)
+
+    def flank_move(self, game, dest, obstacle_list, flank_distance=1000):
         """
         receives locations, objects and distances and performs the flanking
         puts all the functions to use and actually sends commands to the elf

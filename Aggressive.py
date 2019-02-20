@@ -60,7 +60,7 @@ class Aggressive:
             if not self.game.get_enemy_portals() is None:
                 obstacles += self.game.get_enemy_portals()
                 #obstacles += self.game.get_enemy_living_elves()
-            manuver_is_done = elf.manuver_move(game, location_to_move, obstacles)
+            manuver_is_done = elf.maneuver_move(game, location_to_move, obstacles)
             if manuver_is_done:
                 if elf.elf.is_building:
                     elf.elf.build_portal()
