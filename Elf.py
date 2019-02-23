@@ -33,27 +33,6 @@ class Elf:
             else:
                 self.elf.move_to(tgt)
 
-    def simple_flank(self, dest):
-        """
-        moves the elf in a safe manner toward the designated location
-        :param dest: the designated location
-        """
-        elf = self.elf
-        game = self.game
-        rad = game.‎elf_max_speed
-        enemy_portals = game.get_enemy_portals()
-        enemy_ice = game.get_enemy_ice_trolls()
-        target = elf.location.towards(dest, rad)
-        if elf.location.row > dest.row:
-            is_above = True
-        else: is_above = False
-
-        def move():
-            if target.row > elf.location.row:
-                feta = acos()
-
-        for enemy_portals
-
     def manuver_move(self, game, dest, obstacle_list, flank_distance=1000):
         """
         receives locations, objects and distances and performs the flanking
