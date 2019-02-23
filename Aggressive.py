@@ -27,7 +27,24 @@ class Aggressive:
         for uid in self.dirDict.keys():  # delete old
             if uid not in elfDict:
                 del self.dirDict[uid]
-
+    
+    def get_aggresive_score(self, game):
+        hp_delta = game.get_my_castle().current_health - game.get_enemy_castle().current_health
+        attack_portals_built = self.attack_portals_built(game) 
+        enemy_mana = game.get_enemy_mana()
+        #need to find best factors for performance, after testing.(jacob)
+        hp_factor = 1
+        attack_portals_factor = 1
+        enemy_mana_factor = -0.1
+        
+        return hp_delta*hp_factor+attack_portals_built*attack_portals_factor+enemy_mana*enemy_mana_factor
+        
+    
+    
+    def attack_portals_built(self, game): #returns amount of portals built on a certain side
+        return len([portal for portal in game.get_my_portals() if portal.location.row < (game.rows/2)]) # the side of thr rows needs to be checked
+    
+    
     def build_portals(self, game):
         """
         build portals at the designated flanking points
