@@ -55,16 +55,14 @@ class Aggressive:
         elves_by_distance = sorted(self.my_elves, key=closest_attack_portal, reverse=True)
 
         for elf in elves_by_distance[0:amount_of_assigned_elves]:  # build portals with all assigned elves
-            location_to_move = self.move_normal(game, enemy_castle.location, distance_from_tgt, self.dirDict[elf.elf.unique_id])
-            obstacles = []
-            if not self.game.get_enemy_portals() is None:
-                obstacles += self.game.get_enemy_portals()
-                #obstacles += self.game.get_enemy_living_elves()
-            manuver_is_done = elf.manuver_move(game, location_to_move, obstacles)
-            if manuver_is_done:
-                if elf.elf.is_building:
+            location_to_move = self.move_normal(game, enemy_castle.location, distance_from_tgt,
+                                                self.dirDict[elf.elf.unique_id])
+            if elf.elf.location.equals(location_to_move):  # check if elf is in designated location
+                if elf.elf.can_build_portal():  # if able to built portal
                     elf.elf.build_portal()
-                elf.was_building = True
+                    elf.was_building = True
+            else:  # if not at location to build move to the location
+                elf.move(location_to_move)
             flanking_elves.append(elf)
         return flanking_elves
 
