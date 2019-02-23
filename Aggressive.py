@@ -42,7 +42,7 @@ class Aggressive:
     
     
     def attack_portals_built(self, game): #returns amount of portals built on a certain side
-        return len([portal for portal in game.get_my_portals() if portal.location.row < (game.rows/2)]) # the side of thr rows needs to be checked
+        return len(self.attackDict) # the side of thr rows needs to be checked
     
     
     def build_portals(self, game):
