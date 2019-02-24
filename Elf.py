@@ -1,16 +1,19 @@
 from elf_kingdom import *
 from math import sqrt, asin, acos, cos, sin
 import flanking
+from newMath import get_alpha_from_points, get_point_by_alpha
+
 
 class Elf:
     """
     elf class is used to remember previous elf state and have complex moving methods
     """
+
     def __init__(self, game, elf):
         self.game = game
         self.elf = elf
         # used to remember where the user designated the elf to go last turn and where he actually went:
-        self.moving_to = [Location(0,0), Location(0,0)]  # (user input, elf target)
+        self.moving_to = [Location(0, 0), Location(0, 0)]  # (user input, elf target)
         self.was_building = None  # used to check if the elf was building the previous turn
         self.start_manuver = elf.location
         self.dest_manuver = None
@@ -33,6 +36,65 @@ class Elf:
             else:
                 self.elf.move_to(tgt)
 
+    def simple_flank(self, game, dest, ignore=(False, False, False)):
+        """
+        simple flanking algorithm
+        :param game: game instance
+        :param dest: the final designated location
+        :param ingnore: a tuple that has 3 bool objects that indicate
+        if you want to ignore (in this oreder) elf, portals, ice_trolls
+        """
+        if self.elf.location.distance(dest) <= game.elf_max_speed:
+            self.elf.move_to(dest)
+            return True
+        enemy_portals = game.get_enemy_portals()
+        enemy_elves = game.get_enemy_living_elves()
+        enemy_trolls = game.get_enemy_ice_trolls()
+        distance_from_portals = game.ice_troll_attack_range * 5
+        distance_from_elves = int(game.elf_attack_range * 1.75)
+        distance_from_trolls = int(game.ice_troll_attack_range * 1.75)
+        radius = game.elf_max_speed
+        center_point = self.elf.location
+        trgt_point = center_point.towards(dest, radius)
+        strt_alpha = get_alpha_from_points(center_point, trgt_point)
+        pos_alpha = strt_alpha + 5
+        neg_alpha = strt_alpha - 5
+        neg_point = None
+        pos_point = None
+
+        def is_safe(point):
+            for elf in enemy_elves:
+                if (dest.distance(elf) > distance_from_elves and
+                    elf.location.distance(point) < distance_from_elves) and not ignore[0]:
+                    return False
+            for portal in enemy_portals:
+                if (dest.distance(portal) > distance_from_portals and
+                    portal.location.distance(point) < distance_from_portals) and not ignore[1]:
+                    return False
+            for troll in enemy_trolls:
+                if (dest.distance(troll) > distance_from_trolls and
+                    troll.location.distance(point) < distance_from_trolls) and not ignore[2]:
+                    return False
+            return True
+
+        if is_safe(trgt_point):
+            self.elf.move_to(trgt_point)
+            return True
+        else:
+            while pos_alpha < strt_alpha + 55 or neg_alpha > strt_alpha - 55:
+                pos_point = get_point_by_alpha(pos_alpha, center_point, trgt_point)
+                if is_safe(pos_point):
+                    self.elf.move_to(pos_point)
+                    return True
+                pos_alpha += 5
+                neg_point = get_point_by_alpha(neg_alpha, center_point, trgt_point)
+                if is_safe(neg_point):
+                    self.elf.move_to(neg_point)
+                    return True
+                neg_alpha -= 5
+            self.elf.move_to(trgt_point)
+            return True
+
     def manuver_move(self, game, dest, obstacle_list, flank_distance=1000):
         """
         receives locations, objects and distances and performs the flanking
@@ -51,7 +113,7 @@ class Elf:
             obstacle_list = []
 
         return flanking.manuver_move(game, self.elf, flanking.location_to_tuple(self.start_manuver),
-                              flanking.location_to_tuple(self.dest_manuver), flank_distance, obstacle_list)
+                                     flanking.location_to_tuple(self.dest_manuver), flank_distance, obstacle_list)
 
     def move_normal(self, tgt, dist, dir=None, srt=None, fix=None):
         """
@@ -100,9 +162,13 @@ class Elf:
 
         def check_if_able_to_build(loc):  # check if able to build a portal if not move the point over
             global pointA, pointB
-            while not self.game.can_build_portal_at(pointA) and not pointA.equals(loc) and out_of_boundaries(self.game, pointA, 50):
+            while not self.game.can_build_portal_at(pointA) and not pointA.equals(loc) and out_of_boundaries(self.game,
+                                                                                                             pointA,
+                                                                                                             50):
                 pointA = pointA.towards(loc, 5)
-            while not self.game.can_build_portal_at(pointB) and not pointB.equals(loc) and out_of_boundaries(self.game, pointB, 50):
+            while not self.game.can_build_portal_at(pointB) and not pointB.equals(loc) and out_of_boundaries(self.game,
+                                                                                                             pointB,
+                                                                                                             50):
                 pointB = pointB.towards(loc, 5)
             if pointA.equals(loc) or pointB.equals(loc):
                 print "REEE"
