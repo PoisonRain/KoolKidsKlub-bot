@@ -41,7 +41,7 @@ class Elf:
         simple flanking algorithm
         :param game: game instance
         :param dest: the final designated location
-        :param ingnore: a tuple that has 3 bool objects that indicate
+        :param ignore: a tuple that has 3 bool objects that indicate
         if you want to ignore (in this oreder) elf, portals, ice_trolls
         """
         if self.elf.location.distance(dest) <= game.elf_max_speed:
@@ -64,16 +64,13 @@ class Elf:
 
         def is_safe(point):
             for elf in enemy_elves:
-                if (dest.distance(elf) > distance_from_elves and
-                    elf.location.distance(point) < distance_from_elves) and not ignore[0]:
+                if (dest.distance(elf) > distance_from_elves > elf.location.distance(point)) and not ignore[0]:
                     return False
             for portal in enemy_portals:
-                if (dest.distance(portal) > distance_from_portals and
-                    portal.location.distance(point) < distance_from_portals) and not ignore[1]:
+                if (dest.distance(portal) > distance_from_portals > portal.location.distance(point)) and not ignore[1]:
                     return False
             for troll in enemy_trolls:
-                if (dest.distance(troll) > distance_from_trolls and
-                    troll.location.distance(point) < distance_from_trolls) and not ignore[2]:
+                if (dest.distance(troll) > distance_from_trolls > troll.location.distance(point)) and not ignore[2]:
                     return False
             return True
 
