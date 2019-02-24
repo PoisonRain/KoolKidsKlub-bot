@@ -10,6 +10,8 @@ NORMAL_ATTACK_MODE_MANA_CAP = 100  # the limit to become a more aggresive versio
 CASTLE_DEFENSE = 5000  # range of which elfs will try to destroy enemy portals, TODO: make it using range of map
 ELF_DEFENSE_BOOST_RANGE = 400  # range of attack targets portal will spawn defense to help the elfs
 ELF_DEFENSE_BOOST_MANA = 100  # mana cap to spawn defense to help elfs attack
+ENEMY_FOUNTAIN_NO_PORTALS_RANGE = 400  # range of an enemy fountain of which there can be no enemy portals for us to
+# attack it( on elf's way back to base)
 
 class Normal:
     """
@@ -172,6 +174,10 @@ class Normal:
                 for i in range(2):  # use 2 elfs (assuming they add more elfs in the future)
                     if target is not None:
                         if len(self.my_elves) > i and not self.my_elves[i].elf.already_acted:
+                            # fountains_on_path = self.get_fountains_on_path(self.my_elves[i]) TODO: keep debugging this removed for eyal 2 test :) mojo
+                            # if len(fountains_on_path) > 0:
+                            #     self.my_elves[i].attack(fountains_on_path[0])
+                            # else:
                             self.my_elves[i].attack(target)
                             if self.game.get_my_mana() > ELF_DEFENSE_BOOST_MANA:  # summon defense to help the elfs if there is a need
                                 defense_portals = self.portals.closest_portals_sorted(target)
@@ -184,15 +190,26 @@ class Normal:
     def sorted_map_objects(self, point, objects):
         """
         get a tuple of lists of map objects and a point and sort them closest to point first
-        :param point: location on the map to sort from
+        :param point: location on the map to sort from, needs to be map object
         :param objects: map objects tuple of lists
         :return: sorted_objects the sorted list of map object closest being first
         """
+        print objects
+        print len(objects)
+        if len(objects) == 1:
+            return objects
         sorted_objects = [j for i in objects for j in i]
+        print 'dddddddddddddd'
         if len(sorted_objects) > 0:
             sorted_objects.sort(key=lambda x: x.distance(point.get_location()), reverse=False)
         return sorted_objects
 
+    def get_fountains_on_path(self, elf):
+        fountains = []
+        for fountain in self.sorted_map_objects(elf, (self.game.get_enemy_mana_fountains())):
+            if fountain.distance(self.game.get_my_castle()) < elf.distance(self.game.get_my_castle()) and len(self.portals.portals_around_map_object(fountain, ENEMY_FOUNTAIN_NO_PORTALS_RANGE, self.game.get_enemy_portals())) == 0:
+                fountains.append(fountain)
+        return fountains
 
 
 
