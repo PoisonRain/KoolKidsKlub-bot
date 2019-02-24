@@ -6,6 +6,7 @@ class Aggressive:
     """
     do aggressive things so basically zerg rush
     """
+
     def __init__(self, game, elfDict, attackDict):
         self.game = game
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]
@@ -27,29 +28,22 @@ class Aggressive:
         for uid in self.dirDict.keys():  # delete old
             if uid not in elfDict:
                 del self.dirDict[uid]
-    
+
     def get_aggresive_score(self, game):
         hp_delta = game.get_my_castle().current_health - game.get_enemy_castle().current_health
-        attack_portals_built = self.attack_portals_built(game) 
+        attack_portals_built = self.attack_portals_built(game)
         enemy_mana = game.get_enemy_mana()
-        #need to find best factors for performance, after testing.(jacob)
+        # need to find best factors for performance, after testing.(jacob)
         hp_factor = 1
         attack_portals_factor = 1
         enemy_mana_factor = -0.1
-        
-        return hp_delta*hp_factor+attack_portals_built*attack_portals_factor+enemy_mana*enemy_mana_factor
-        
-    
-    
-    def attack_portals_built(self, game): #returns amount of portals built on a certain side
-        return len(self.attackDict) # the side of thr rows needs to be checked
-    
-    
+
+        return hp_delta * hp_factor + attack_portals_built * attack_portals_factor + enemy_mana * enemy_mana_factor
+
+    def attack_portals_built(self, game):  # returns amount of portals built on a certain side
+        return len(self.attackDict)  # the side of thr rows needs to be checked
 
     def outside_aggressive_buildportals(self, game, elfDict, attackDict):
-        """
-        build attack portals after updating whatever needs to be updated
-        """
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]  # update self.my_elves
         self.attackDict = list(attackDict.values())  # update self.attackDict
         self.update_dirDict(elfDict)  # update dirDict
@@ -58,10 +52,11 @@ class Aggressive:
 
         return flanking_elves
 
-    def build_portals(self, game):
+    def build_portals(self, game, elfDict, attackDict):
         """
         build portals at the designated flanking points
         """
+
         def closest_attack_portal(Elf):
             if len(self.attackDict) == 0:
                 return 1
@@ -92,7 +87,8 @@ class Aggressive:
                     elf.elf.build_portal()
                     elf.was_building = True
             else:  # if not at location to build move to the location
-                elf.move(location_to_move)
+                elf.simple_flank(game, location_to_move)
+                print "i iz move"
             flanking_elves.append(elf)
         return flanking_elves
 
@@ -128,17 +124,21 @@ class Aggressive:
                         break
 
             if elf.elf.current_health < 9 and enemy_close:  # if you pussy run
-                elf.elf.move_to(my_castle)
+                elf.simple_flank(game, my_castle)
 
-            elif len([portal for portal in enemy_portals if portal.location.distance(enemy_castle) < 2500]) > 0:  # attack enemy portals
-                    min = self.game.rows + self.game.cols
-                    portal_to_attack = None
-                    for portal in [portal for portal in enemy_portals if portal.location.distance(enemy_castle) < 2500]:
-                        if elf.elf.location.distance(portal.location) < min:
-                            min = elf.elf.location.distance(portal.location)
-                            portal_to_attack = portal
-                    if portal_to_attack is not None:
-                        elf.attack(portal_to_attack)
+            elif len([portal for portal in enemy_portals if
+                      portal.location.distance(enemy_castle) < 2500]) > 0:  # attack enemy portals
+                min = self.game.rows + self.game.cols
+                portal_to_attack = None
+                for portal in [portal for portal in enemy_portals if portal.location.distance(enemy_castle) < 2500]:
+                    if elf.elf.location.distance(portal.location) < min:
+                        min = elf.elf.location.distance(portal.location)
+                        portal_to_attack = portal
+                if portal_to_attack is not None and not elf.elf.already_acted:
+                    if elf.elf.in_attack_range(portal_to_attack):
+                        elf.elf.attack(portal_to_attack)
+                    else:
+                        elf.simple_flank(game, portal_to_attack, (True, False, False))
 
             else:  # if has nothing to attack attack the enemy castle
                 elf.attack(enemy_castle)
@@ -148,7 +148,7 @@ class Aggressive:
         self.attackDict = list(attackDict.values())  # update self.attackDict
         self.update_dirDict(elfDict)  # update dirDict
 
-        flanking_elves = self.build_portals(game)  # i mean basically build flanking portals
+        flanking_elves = self.build_portals(game, elfDict, attackDict)  # i mean basically build flanking portals
 
         self.attack(game)
 
