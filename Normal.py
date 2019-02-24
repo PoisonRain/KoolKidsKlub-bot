@@ -65,9 +65,14 @@ class Normal:
             if elfDict[key].location.distance(loc) < min_dist:
                 min_dist = elfDict[key].location.distance(loc)
                 elfKey = key
-        return key
+        return elfKey
 
     def maintain_defence(self, game, elfDict):
+        """
+        build portals at the designated locations
+        :param game: the game instance
+        :param elfDict: elfDict
+        """
         elfDict = elfDict[:]
         my_castle = game.get_my_castle().location
         enemy_castle = game.get_enemy_castle().location
@@ -95,10 +100,13 @@ class Normal:
         """
         self.normal_update(game, elfDict, attackDict)
 
+        self.maintain_defence(game, elfDict)
+
         flanking_elves = self.build_portals(elfDict, attackDict)  # build the flanking poratls, might need to be in
         # an if with mana and our elfs taken into account
 
         self.normal_defense()  # defend the castle (if there are enemies in range)
+
 
         if self.game.get_my_mana() >= LAVA_DRAIN_MANA_LIMIT:  # drain enemy mana if our mana is above our set limite
             self.normal_enemy_mana_drain(self.attackDict)
