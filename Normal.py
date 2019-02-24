@@ -112,7 +112,7 @@ class Normal:
             for portal in attack_portals:
                 if portal.can_summon_lava_giant():
                     portal.summon_lava_giant()
-                    lava, ice = True
+                    lava = ice = True
 
     def normal_attack_lowMana(self, attack_portals):
         """
@@ -171,7 +171,7 @@ class Normal:
             if self.my_castle.distance(target) < CASTLE_DEFENSE:
                 for i in range(2):  # use 2 elfs (assuming they add more elfs in the future)
                     if target is not None:
-                        if not self.my_elves[i].elf.already_acted:
+                        if len(self.my_elves) > i and not self.my_elves[i].elf.already_acted:
                             self.my_elves[i].attack(target)
                             if self.game.get_my_mana() > ELF_DEFENSE_BOOST_MANA:  # summon defense to help the elfs if there is a need
                                 defense_portals = self.portals.closest_portals_sorted(target)

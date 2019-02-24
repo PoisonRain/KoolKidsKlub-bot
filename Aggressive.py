@@ -28,6 +28,18 @@ class Aggressive:
             if uid not in elfDict:
                 del self.dirDict[uid]
 
+    def outside_aggressive_buildportals(self, game, elfDict, attackDict):
+        """
+        build attack portals after updating whatever needs to be updated
+        """
+        self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]  # update self.my_elves
+        self.attackDict = list(attackDict.values())  # update self.attackDict
+        self.update_dirDict(elfDict)  # update dirDict
+
+        flanking_elves = self.build_portals(game, elfDict, attackDict)  # i mean basically build flanking portals
+
+        return flanking_elves
+
     def build_portals(self, game):
         """
         build portals at the designated flanking points
