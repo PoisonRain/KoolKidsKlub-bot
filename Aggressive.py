@@ -27,6 +27,24 @@ class Aggressive:
         for uid in self.dirDict.keys():  # delete old
             if uid not in elfDict:
                 del self.dirDict[uid]
+    
+    def get_aggresive_score(self, game):
+        hp_delta = game.get_my_castle().current_health - game.get_enemy_castle().current_health
+        attack_portals_built = self.attack_portals_built(game) 
+        enemy_mana = game.get_enemy_mana()
+        #need to find best factors for performance, after testing.(jacob)
+        hp_factor = 1
+        attack_portals_factor = 1
+        enemy_mana_factor = -0.1
+        
+        return hp_delta*hp_factor+attack_portals_built*attack_portals_factor+enemy_mana*enemy_mana_factor
+        
+    
+    
+    def attack_portals_built(self, game): #returns amount of portals built on a certain side
+        return len(self.attackDict) # the side of thr rows needs to be checked
+    
+    
 
     def outside_aggressive_buildportals(self, game, elfDict, attackDict):
         """
@@ -44,10 +62,12 @@ class Aggressive:
         """
         build portals at the designated flanking points
         """
-        def closest_attack_portal(elf):
-            elf = elf.elf
-            min = 10 ** 100
-            for portal in self.attackDict:
+        def closest_attack_portal(Elf):
+            if len(self.attackDict) == 0:
+                return 1
+            elf = Elf.elf  # quarries the elf object from Elf class
+            min = elf.location.distance(self.attackDict[0])
+            for portal in self.attackDict[1:]:
                 dist = elf.location.distance(portal)
                 if dist < min:
                     min = dist
@@ -55,7 +75,9 @@ class Aggressive:
 
         enemy_castle = self.game.get_enemy_castle()
         flanking_elves = []
-        attack_portal_amount = 2
+        attack_portal_amount = (game.get_myself().mana_per_turn * 3 // 40)
+        if attack_portal_amount < 2:
+            attack_portal_amount = 2
         amount_of_assigned_elves = attack_portal_amount - len(self.attackDict)
         distance_from_tgt = 600
         if len(self.my_elves) < amount_of_assigned_elves:  # check if the amount of elves i want to assign is to big
@@ -63,7 +85,8 @@ class Aggressive:
         elves_by_distance = sorted(self.my_elves, key=closest_attack_portal, reverse=True)
 
         for elf in elves_by_distance[0:amount_of_assigned_elves]:  # build portals with all assigned elves
-            location_to_move = self.move_normal(game, enemy_castle.location, distance_from_tgt, self.dirDict[elf.elf.unique_id])
+            location_to_move = self.move_normal(game, enemy_castle.location, distance_from_tgt,
+                                                self.dirDict[elf.elf.unique_id])
             if elf.elf.location.equals(location_to_move):  # check if elf is in designated location
                 if elf.elf.can_build_portal():  # if able to built portal
                     elf.elf.build_portal()
@@ -143,7 +166,6 @@ class Aggressive:
         the elf (s) moves to a or b from :srt             a
         where e is designated point :tgt      -->   s-----e
         the distance from e to a|b is :dist               b
-
         :param tgt: The point where you make a normal line to you
         :param dist: The distance you want to go on the perpendicular line
         :param dir: The direction you prefer to go in (up, left) = 1, (down, right) = -1
@@ -151,7 +173,6 @@ class Aggressive:
         :param fix: optional parameter if left None location will move to my_castle until portal is able to be build
         else if set to 1 location will be moved towards tgt else if set to -1 location will be moved towards enemy_castle
         :return: The location the elf should go in
-
         """
         global pointA, pointB
         if srt is None:
@@ -217,4 +238,3 @@ class Aggressive:
             return pointB
         else:
             return pointA
-

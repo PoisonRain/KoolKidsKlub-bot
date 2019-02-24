@@ -1,7 +1,6 @@
 from elf_kingdom import *
-from math import sqrt
+from math import sqrt, asin, acos, cos, sin
 import flanking
-
 
 class Elf:
     """
@@ -13,9 +12,12 @@ class Elf:
         # used to remember where the user designated the elf to go last turn and where he actually went:
         self.moving_to = [Location(0,0), Location(0,0)]  # (user input, elf target)
         self.was_building = None  # used to check if the elf was building the previous turn
+        self.start_manuver = elf.location
+        self.dest_manuver = None
+        self.old_health_2_turns = []
 
-    def move(self, dis):
-        self.elf.move_to(dis)
+    def move(self, dest):
+        self.elf.move_to(dest)
 
     def attack(self, tgt):  # walk to and attacks a target
         if tgt is not None and not self.elf.already_acted:
@@ -30,18 +32,26 @@ class Elf:
                 self.attack(tgt)
             else:
                 self.elf.move_to(tgt)
-                
-    
-    def manuver_move(self, game, dest, obstacle_locations, flank_distance=500):#recieves locations, objects and distances and performs the flanking
+
+    def manuver_move(self, game, dest, obstacle_list, flank_distance=1000):
         """
+        receives locations, objects and distances and performs the flanking
         puts all the functions to use and actually sends commands to the elf
         :param game: game instance
         :param dest: destination
         :param flank_distance: how far from the obstacle should the elf swerve
-        :param obstacle_locations: a list of all the locations of the obstacles to avoid(in tuple form)
+        :param obstacle_list: a list of all of the obstacles to avoid
         """
-        obstacle_list = [flanking.location_to_tuple(x) for x in obstacle_locations]
-        flanking.manuver_move(game, self.elf, flanking.location_to_tuple(self.elf.location) , flanking.location_to_tuple(dest) , flank_distance, obstacle_list)
+        if dest != self.dest_manuver:
+            self.dest_manuver = dest
+            self.start_manuver = self.elf.location
+        try:
+            obstacle_list = [flanking.location_to_tuple(obstacle.location) for obstacle in obstacle_list]
+        except:
+            obstacle_list = []
+
+        return flanking.manuver_move(game, self.elf, flanking.location_to_tuple(self.start_manuver),
+                              flanking.location_to_tuple(self.dest_manuver), flank_distance, obstacle_list)
 
     def move_normal(self, tgt, dist, dir=None, srt=None, fix=None):
         """
