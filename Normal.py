@@ -1,5 +1,6 @@
 from elf_kingdom import *
 from Portals import *
+from newMath import move_point_by_angle
 
 # constants
 DEFENSE_MANA_CAP = 60  # limit to when we stop defending due to low mana
@@ -37,6 +38,60 @@ class Normal:
 
         self.portals = Portals(game, game.get_my_portals())  # create an instance of portals object to summon etc.
 
+    @staticmethod
+    def portal_on_location(game, loc):
+        """
+        get a location and checks if there is a portal(friendly) there
+        :param game: the game instance
+        :param loc: the location on which the portal(friendly) should be
+        :return: True if there is a portal there, False else
+        """
+        my_portals = game.get_my_portals()
+        for portal in my_portals:
+            if portal.location.equals(loc):
+                return True
+        return False
+
+    @staticmethod
+    def get_closest_elf(game, loc, elfDict):
+        """
+        returns the key of the closest elf to the designated location
+        :param game: game instance
+        :param loc: designated location
+        :param elfDict: elfDict..
+        :return: the key of the closest elf
+        """
+        min_dist = elfDict.values()[0].location.distance(loc)
+        elfKey = elfDict.keys()[0]
+        for key in elfDict.keys():
+            if elfDict[key].location.distance(loc) < min_dist:
+                min_dist = elfDict[key].location.distance(loc)
+                elfKey = key
+        return elfKey
+
+    def maintain_defence(self, game, elfDict):
+        """
+        build portals at the designated locations
+        :param game: the game instance
+        :param elfDict: elfDict
+        """
+        elfDict = elfDict[:]
+        my_castle = game.get_my_castle().location
+        enemy_castle = game.get_enemy_castle().location
+        middle_portal = my_castle.towards(enemy_castle, 500)
+        left_portal = move_point_by_angle(my_castle, middle_portal, -50)
+        right_portal = move_point_by_angle(my_castle, middle_portal, 50)
+        if len(elfDict) > 0:
+            if self.portal_on_location(middle_portal):
+                elf = elfDict[self.get_closest_elf(game, middle_portal, elfDict)]
+                elf.build_portal(middle_portal)
+            if self.portal_on_location(left_portal):
+                elf = elfDict[self.get_closest_elf(game, left_portal, elfDict)]
+                elf.build_portal(left_portal)
+            if self.portal_on_location(right_portal):
+                elf = elfDict[self.get_closest_elf(game, right_portal, elfDict)]
+                elf.build_portal(right_portal)
+
     def do_normal(self, game, elfDict, attackDict):
         """
         updates normal
@@ -47,10 +102,13 @@ class Normal:
         """
         self.normal_update(game, elfDict, attackDict)
 
+        self.maintain_defence(game, elfDict)
+
         flanking_elves = self.build_portals(elfDict, attackDict)  # build the flanking poratls, might need to be in
         # an if with mana and our elfs taken into account
 
         self.normal_defense()  # defend the castle (if there are enemies in range)
+
 
         if self.game.get_my_mana() >= LAVA_DRAIN_MANA_LIMIT:  # drain enemy mana if our mana is above our set limite
             self.normal_enemy_mana_drain(self.attackDict)

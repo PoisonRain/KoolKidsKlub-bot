@@ -37,3 +37,16 @@ def get_point_by_alpha(alpha, center_point, trgt_point):
 
     return tuple_to_location(tup)
 
+
+def move_point_by_angle(axis, point, angle_delta):
+    """
+    moves a point by a certain angle on an axis
+    :param axis: the axis (center)
+    :param point: the point to move
+    :param angle_delta: the amount of degrees
+    :return: the new point
+    """
+    angle = get_alpha_from_points(axis, point)
+    angle += angle_delta
+    return get_point_by_alpha(angle, axis, point)
+
