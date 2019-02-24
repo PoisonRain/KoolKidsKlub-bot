@@ -42,7 +42,7 @@ class Elf:
         :param game: game instance
         :param dest: the final designated location
         :param ignore: a tuple that has 3 bool objects that indicate
-        if you want to ignore (in this oreder) elf, portals, ice_trolls
+        if you want to ignore (in this order) elf, portals, ice_trolls
         """
         if self.elf.location.distance(dest) <= game.elf_max_speed:
             self.elf.move_to(dest)
@@ -53,7 +53,7 @@ class Elf:
         distance_from_portals = game.ice_troll_attack_range * 5
         distance_from_elves = int(game.elf_attack_range * 1.75)
         distance_from_trolls = int(game.ice_troll_attack_range * 1.75)
-        radius = game.elf_max_speed
+        radius = self.elf.max_speed
         center_point = self.elf.location
         trgt_point = center_point.towards(dest, radius)
         strt_alpha = get_alpha_from_points(center_point, trgt_point)
