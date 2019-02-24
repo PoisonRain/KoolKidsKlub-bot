@@ -2,6 +2,8 @@ from elf_kingdom import *
 
 CASTLE_DEFENSE_RANGE = 2000
 ICE_TO_LAVA_RATIO = 1
+PORTAL_SELF_DEFENSE_RANGE = 400
+PORTAL_HELP_DEFEND_RANGE = 200
 
 
 class Portals():
@@ -47,6 +49,49 @@ class Portals():
         my_portals = self.game.get_my_portals()
         my_portals.sort(key=lambda x: x.location.distance(point), reverse=False)
         return my_portals
+
+    def portals_around_map_object(self, point, range, portal_list):
+        """
+        get a list of portals around a given point from a given list of portals to allow using on both enemy and
+        friendly portals
+        :param point: location on the map to search around, needs to be map object
+        :param range: range of which to count portals around the point
+        :param portal_list: list of portals to check if they are around the given point in the given range
+        :return: list of friendly or enemy portals around the given point in the given range
+        """
+        portals = []
+        for portal in portal_list:
+            if portal.distance(point) < range:
+                portals.append(portal)
+        return portals
+
+    def defend_portal(self, portal, mana_cap):
+        """
+        defend the given portal with a set mana cap. the function also uses nearby portals if they are in
+        range(PORTAL_HELP_DEFEND_RANGE)
+        :param portal: portal to defend
+        :param mana_cap: the limit of which defense can be spawned
+        :return: return false if mana_cap is not met
+        """
+        count = 0
+        if self.game.get_my_mana() < mana_cap:
+            return False
+        for elf in self.game.get_enemy_living_elves():  # for each enemy elf add 2 to count ( spawn more defense for elf)
+            if portal.distance(elf) < PORTAL_SELF_DEFENSE_RANGE:
+                count += 2
+        for ice in self.game.get_enemy_ice_trolls():  # for each enemy ice add 1 ice to count of how many defense to spawn
+            if portal().distance(ice) < PORTAL_SELF_DEFENSE_RANGE:
+                count += 1
+        for ice in self.game.get_my_ice_trolls():  # for each friendly ice subtract 1 ice to prevent spam
+            if portal().distance(ice) < PORTAL_SELF_DEFENSE_RANGE:
+                count -= 1
+        closest_portals = self.closest_portals_sorted(self.game.get_my_castle())
+        for i in range(int(count)):
+            if self.game.get_my_mana() > mana_cap and closest_portals[i].distance(portal) < PORTAL_HELP_DEFEND_RANGE:
+                # use all nearby portals(that are needed for the amount of enemies) to defend if they are within range
+                if not self.summon_defense(portal):
+                    i -= 1
+
 
     def portals_defend_castle(self, mana_cap):
         """
@@ -115,6 +160,8 @@ class Portals():
         """
         if portal.can_summon_ice_troll():
             portal.summon_ice_troll()
+        else:
+            return False
 
 
 class Attack_List():
