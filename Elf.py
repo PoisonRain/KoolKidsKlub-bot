@@ -19,6 +19,25 @@ class Elf:
         self.dest_manuver = None
         self.old_health_2_turns = []
 
+
+    @staticmethod
+    def get_closest_elf(game, loc, elfDict):
+        """
+        returns the key of the closest elf to the designated location
+        :param game: game instance
+        :param loc: designated location
+        :param elfDict: elfDict..
+        :return: the key of the closest elf
+        """
+        min_dist = elfDict.values()[0].elf.distance(loc)
+        elfKey = elfDict.keys()[0]
+        for key in elfDict.keys():
+            if elfDict[key].elf.distance(loc) < min_dist:
+                min_dist = elfDict[key].elf.distance(loc)
+                elfKey = key
+        return elfKey
+
+
     def move(self, dest):
         self.elf.move_to(dest)
 
