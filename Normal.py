@@ -62,10 +62,10 @@ class Normal:
         :param elfDict: elfDict..
         :return: the key of the closest elf
         """
-        min_dist = elfDict.values()[0].location.distance(loc)
+        min_dist = elfDict.values()[0].elf.distance(loc)
         elfKey = elfDict.keys()[0]
         for key in elfDict.keys():
-            if elfDict[key].location.distance(loc) < min_dist:
+            if elfDict[key].elf.distance(loc) < min_dist:
                 min_dist = elfDict[key].location.distance(loc)
                 elfKey = key
         return elfKey
@@ -76,19 +76,20 @@ class Normal:
         :param game: the game instance
         :param elfDict: elfDict
         """
+
         my_castle = game.get_my_castle().location
         enemy_castle = game.get_enemy_castle().location
         middle_portal = my_castle.towards(enemy_castle, 500)
         left_portal = move_point_by_angle(my_castle, middle_portal, -50)
         right_portal = move_point_by_angle(my_castle, middle_portal, 50)
         if len(elfDict) > 0:
-            if self.portal_on_location(game, middle_portal):
+            if not self.portal_on_location(game, middle_portal):
                 elf = elfDict[self.get_closest_elf(game, middle_portal, elfDict)]
                 elf.build_portal(middle_portal)
-            if self.portal_on_location(game, left_portal):
+            if not self.portal_on_location(game, left_portal):
                 elf = elfDict[self.get_closest_elf(game, left_portal, elfDict)]
                 elf.build_portal(left_portal)
-            if self.portal_on_location(game, right_portal):
+            if not self.portal_on_location(game, right_portal):
                 elf = elfDict[self.get_closest_elf(game, right_portal, elfDict)]
                 elf.build_portal(right_portal)
 
@@ -102,13 +103,12 @@ class Normal:
         """
         self.normal_update(game, elfDict, attackDict)
 
-        self.maintain_defence(game, elfDict)
+        self.maintain_defence(game, elfDict)  # doesnt work yet - eyal do it
 
         flanking_elves = self.build_portals(elfDict, attackDict)  # build the flanking poratls, might need to be in
         # an if with mana and our elfs taken into account
-
+        self.normal_elf_defendcastle(elfDict)
         self.normal_defense()  # defend the castle (if there are enemies in range)
-
 
         if self.game.get_my_mana() >= LAVA_DRAIN_MANA_LIMIT:  # drain enemy mana if our mana is above our set limite
             self.normal_enemy_mana_drain(self.attackDict)
@@ -232,11 +232,11 @@ class Normal:
                 for i in range(2):  # use 2 elfs (assuming they add more elfs in the future)
                     if target is not None:
                         if len(self.my_elves) > i and not self.my_elves[i].elf.already_acted:
-                            # fountains_on_path = self.get_fountains_on_path(self.my_elves[i]) TODO: keep debugging this removed for eyal 2 test :) mojo
-                            # if len(fountains_on_path) > 0:
-                            #     self.my_elves[i].attack(fountains_on_path[0])
-                            # else:
-                            self.my_elves[i].attack(target)
+                            fountains_on_path = self.get_fountains_on_path(self.my_elves[i])
+                            if len(fountains_on_path) > 0:
+                                self.my_elves[i].attack(fountains_on_path[0])
+                            else:
+                                self.my_elves[i].attack(target)
                             if self.game.get_my_mana() > ELF_DEFENSE_BOOST_MANA:  # summon defense to help the elfs if there is a need
                                 defense_portals = self.portals.closest_portals_sorted(target)
                                 if len(defense_portals) > 0 and defense_portals[0].distance(
@@ -252,20 +252,23 @@ class Normal:
         :param objects: map objects tuple of lists
         :return: sorted_objects the sorted list of map object closest being first
         """
-        print objects
-        print len(objects)
-        if len(objects) == 1:
-            return objects
-        sorted_objects = [j for i in objects for j in i]
-        print 'dddddddddddddd'
+        # print objects
+        # print len(objects)
+        if isinstance(objects, list):
+            sorted_objects = objects
+        else:
+            sorted_objects = [j for i in objects for j in i]
         if len(sorted_objects) > 0:
             sorted_objects.sort(key=lambda x: x.distance(point.get_location()), reverse=False)
         return sorted_objects
 
     def get_fountains_on_path(self, elf):
         fountains = []
-        for fountain in self.sorted_map_objects(elf, (self.game.get_enemy_mana_fountains())):
-            if fountain.distance(self.game.get_my_castle()) < elf.distance(self.game.get_my_castle()) and len(self.portals.portals_around_map_object(fountain, ENEMY_FOUNTAIN_NO_PORTALS_RANGE, self.game.get_enemy_portals())) == 0:
+        d = (self.game.get_enemy_mana_fountains())
+        for fountain in self.sorted_map_objects(elf.elf, d):
+            if fountain.distance(self.game.get_my_castle()) < elf.elf.distance(self.game.get_my_castle()) and len(
+                    self.portals.portals_around_map_object(fountain, ENEMY_FOUNTAIN_NO_PORTALS_RANGE,
+                                                           self.game.get_enemy_portals())) == 0:
                 fountains.append(fountain)
         return fountains
 
