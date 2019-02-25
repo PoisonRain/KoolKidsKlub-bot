@@ -2,7 +2,6 @@ from elf_kingdom import *
 from Elf import *
 from Start import Start
 from Aggressive import Aggressive
-from Normal import Normal
 from Defense import Defense
 from Normal import Normal
 from Portals import *

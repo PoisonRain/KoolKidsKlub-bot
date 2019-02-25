@@ -14,6 +14,7 @@ ELF_DEFENSE_BOOST_MANA = 100  # mana cap to spawn defense to help elfs attack
 ENEMY_FOUNTAIN_NO_PORTALS_RANGE = 400  # range of an enemy fountain of which there can be no enemy portals for us to
 # attack it( on elf's way back to base)
 
+
 class Normal:
     """
      the normal mode, theoreticlly the mode we will be in most of the time. aims to reduce enemy mana and maintain

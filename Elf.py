@@ -1,5 +1,5 @@
 from elf_kingdom import *
-from math import sqrt, asin, acos, cos, sin
+from math import sqrt
 import flanking
 from newMath import get_alpha_from_points, get_point_by_alpha
 
