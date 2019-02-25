@@ -2,9 +2,10 @@ from elf_kingdom import *
 
 CASTLE_DEFENSE_RANGE = 2000
 ICE_TO_LAVA_RATIO = 1
-PORTAL_SELF_DEFENSE_RANGE = 400
+PORTAL_SELF_DEFENSE_RANGE = 800
 PORTAL_HELP_DEFEND_RANGE = 200
-
+DEFENSE_PORTAL_RANGE = 2000
+CASTLE_DEFEND_FROM_ELFS = 800
 
 class Portals:
     """
@@ -78,7 +79,7 @@ class Portals:
             return False
         for elf in self.game.get_enemy_living_elves():  # for each enemy elf add 2 to count ( spawn more defense for elf)
             if portal.distance(elf) < PORTAL_SELF_DEFENSE_RANGE:
-                count += 2
+                count += 1
                 elf_in_range = True
         if not elf_in_range:
             return False  # return if there are no elfs in range - so nuffin to defend from
@@ -90,10 +91,13 @@ class Portals:
             if portal().distance(ice) < PORTAL_SELF_DEFENSE_RANGE:
                 count -= 1
         closest_portals = self.closest_portals_sorted(self.game.get_my_castle())
+        print(str(count) + ' dddddddd')
         for i in range(int(count)):
+            print(str(i) + 'print i and stuff idk')
             if self.game.get_my_mana() > mana_cap and closest_portals[i].distance(portal) < PORTAL_HELP_DEFEND_RANGE:
                 # use all nearby portals(that are needed for the amount of enemies) to defend if they are within range
                 if not self.summon_defense(portal):
+                    print ' lol ree'
                     i -= 1
 
     def portals_defend_castle(self, mana_cap):
@@ -103,15 +107,19 @@ class Portals:
          note: might have to keep count of ice's being made to prevent spam? TBD
         :param mana_cap: mana limit we need to have to be able to attack
         :return: nothing
+        TODO: fix the for loop i can be bigger than size of list.... mojo
         """
-
         enemy_lava = self.game.get_enemy_lava_giants()
         count = 0
-        lavas_inrange = []
+        enemies_in_range = []
+        for elf in self.game.get_enemy_living_elves():
+            if self.game.get_my_castle().distance(elf) < CASTLE_DEFEND_FROM_ELFS:
+                enemies_in_range.append(elf)
+                count += 2
         for lava in enemy_lava:  # get lavas in a certain range and put em in a list + count
             if self.game.get_my_castle().distance(lava) < CASTLE_DEFENSE_RANGE:
-                lavas_inrange.append(lava)
-                count += 1
+                enemies_in_range.append(lava)
+                #count += 1
         for ice in self.game.get_my_ice_trolls():  # for each lava subtract an ice so prevent spam
             if self.game.get_my_castle().distance(ice) < CASTLE_DEFENSE_RANGE:
                 count -= 1
@@ -122,12 +130,13 @@ class Portals:
                 count / ICE_TO_LAVA_RATIO):  # find the closest portal to lava giant that isnt further than the castle
             if self.game.get_my_mana() < mana_cap:
                 return
-            portal = closest_portals[0]
-            for p in closest_portals[1:]:
-                if (p.distance(lavas_inrange[i]) < portal.distance(lavas_inrange[i]) and p.distance(
-                        self.game.get_my_castle()) < lavas_inrange[i].distance(
+            portal = closest_portals[-1]
+            for p in closest_portals:
+                if (p.distance(enemies_in_range[i]) < portal.distance(enemies_in_range[i]) and p.distance(
+                        self.game.get_my_castle()) < enemies_in_range[i].distance(
                         self.game.get_my_castle()) and p.can_summon_ice_troll()):
                     portal = p
+                if self.game.get_my_castle().distance(portal) < DEFENSE_PORTAL_RANGE:
                     portal.summon_ice_troll()
 
     def poratls_attack(self, attack_portals, mana_cap):
@@ -160,9 +169,11 @@ class Portals:
     def summon_defense(self, portal):
         """
         simple func to summon defense, might be used using an "attack list" later as using lava to defend is viable.
+        return false if cant summon defense or true if summoned defense
         """
         if portal.can_summon_ice_troll():
             portal.summon_ice_troll()
+            return True
         else:
             return False
 
