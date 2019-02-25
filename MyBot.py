@@ -17,7 +17,7 @@ agrI = None
 srtI = None
 defI = None
 max_dist_from_castle = 12000
-defence_portal_dist = 1000 # portals we consider as our defence portals
+defence_portal_dist = 2000  # portals we consider as our defence portals
 
 
 def update_attackDict(game, my_elves, my_portals):

@@ -159,7 +159,7 @@ class Aggressive:
         flanking_elves = self.build_portals(game, elfDict, attackDict)  # i mean basically build flanking portals
 
         self.attack(game)
-
+        print attackDict
         for portal in self.attackDict:  # spam lava giants while mana above 60
             if (game.get_my_mana() - 40) < 100:
                 break

@@ -174,21 +174,24 @@ class Elf:
             self.elf.move_to(trgt_point)
             return True
         else:
-            while pos_alpha < strt_alpha + 55 or neg_alpha > strt_alpha - 55:
+            while pos_alpha < (strt_alpha + 100) % 360 or neg_alpha > abs(strt_alpha - 100) % 360:
                 pos_point = get_point_by_alpha(pos_alpha, center_point, trgt_point)
                 if is_safe(pos_point):
                     self.elf.move_to(pos_point)
                     return True
-                pos_alpha += 7
+                pos_alpha += 5
+                pos_alpha = pos_alpha % 360
                 neg_point = get_point_by_alpha(neg_alpha, center_point, trgt_point)
                 if is_safe(neg_point):
                     self.elf.move_to(neg_point)
                     return True
-                neg_alpha -= 7
+                neg_alpha -= 5
+                neg_alpha = abs(neg_alpha) % 360
             self.elf.move_to(trgt_point)
             return True
         self.elf.move_to(dest)
         return True
+
 
     def manuver_move(self, game, dest, obstacle_list, flank_distance=1000):
         """

@@ -16,7 +16,7 @@ def get_alpha_from_points(center_point, trgt_point):
 
     a = math.acos(trgt_point[0] / (center_point[0] + radius))
 
-    return a
+    return math.degrees(a)
 
 
 def get_point_by_alpha(alpha, center_point, trgt_point):
@@ -29,7 +29,7 @@ def get_point_by_alpha(alpha, center_point, trgt_point):
     """
     radius = center_point.distance(trgt_point)
     center_point = location_to_tuple(center_point)
-
+    alpha = math.radians(alpha)
     x = center_point[0] + radius * math.cos(alpha)
     y = center_point[1] + radius * math.sin(alpha)
 
@@ -48,5 +48,5 @@ def move_point_by_angle(axis, point, angle_delta):
     """
     angle = get_alpha_from_points(axis, point)
     angle += angle_delta
-    return get_point_by_alpha(angle, axis, point)
+    return get_point_by_alpha(math.radians(angle), axis, point)
 
