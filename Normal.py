@@ -76,20 +76,19 @@ class Normal:
         :param game: the game instance
         :param elfDict: elfDict
         """
-        elfDict = elfDict[:]
         my_castle = game.get_my_castle().location
         enemy_castle = game.get_enemy_castle().location
         middle_portal = my_castle.towards(enemy_castle, 500)
         left_portal = move_point_by_angle(my_castle, middle_portal, -50)
         right_portal = move_point_by_angle(my_castle, middle_portal, 50)
         if len(elfDict) > 0:
-            if self.portal_on_location(middle_portal):
+            if self.portal_on_location(game, middle_portal):
                 elf = elfDict[self.get_closest_elf(game, middle_portal, elfDict)]
                 elf.build_portal(middle_portal)
-            if self.portal_on_location(left_portal):
+            if self.portal_on_location(game, left_portal):
                 elf = elfDict[self.get_closest_elf(game, left_portal, elfDict)]
                 elf.build_portal(left_portal)
-            if self.portal_on_location(right_portal):
+            if self.portal_on_location(game, right_portal):
                 elf = elfDict[self.get_closest_elf(game, right_portal, elfDict)]
                 elf.build_portal(right_portal)
 

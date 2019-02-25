@@ -6,7 +6,7 @@ PORTAL_SELF_DEFENSE_RANGE = 400
 PORTAL_HELP_DEFEND_RANGE = 200
 
 
-class Portals():
+class Portals:
     """
     class for portals contain stuff like enemies around portal and other useful funcs
     defend castle with mana cap, attack using given portal list + mana cap using attack list (ie: lava,lava,ice)

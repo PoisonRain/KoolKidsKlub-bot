@@ -56,17 +56,17 @@ class Aggressive:
         """
         build portals at the designated flanking points
         """
-
+        print "agressive: trying to build portals"
         def closest_attack_portal(Elf):
             if len(self.attackDict) == 0:
                 return 1
             elf = Elf.elf  # quarries the elf object from Elf class
-            min = elf.location.distance(self.attackDict[0])
+            min_dist = elf.location.distance(self.attackDict[0])
             for portal in self.attackDict[1:]:
                 dist = elf.location.distance(portal)
-                if dist < min:
-                    min = dist
-            return min
+                if dist < min_dist:
+                    min_dist = dist
+            return min_dist
 
         enemy_castle = self.game.get_enemy_castle()
         flanking_elves = []
@@ -82,13 +82,12 @@ class Aggressive:
         for elf in elves_by_distance[0:amount_of_assigned_elves]:  # build portals with all assigned elves
             location_to_move = self.move_normal(game, enemy_castle.location, distance_from_tgt,
                                                 self.dirDict[elf.elf.unique_id])
-            if elf.elf.location.equals(location_to_move):  # check if elf is in designated location
+            if elf.elf.location.distance(location_to_move) < 50:  # check if elf is in designated location
                 if elf.elf.can_build_portal():  # if able to built portal
                     elf.elf.build_portal()
                     elf.was_building = True
             else:  # if not at location to build move to the location
-                elf.simple_flank(game, location_to_move)
-                print "i iz move"
+                elf.flank(game, location_to_move)
             flanking_elves.append(elf)
         return flanking_elves
 
@@ -124,21 +123,21 @@ class Aggressive:
                         break
 
             if elf.elf.current_health < 9 and enemy_close:  # if you pussy run
-                elf.simple_flank(game, my_castle)
+                elf.flank(game, my_castle)
 
             elif len([portal for portal in enemy_portals if
                       portal.location.distance(enemy_castle) < 2500]) > 0:  # attack enemy portals
-                min = self.game.rows + self.game.cols
+                min_dist = self.game.rows + self.game.cols
                 portal_to_attack = None
                 for portal in [portal for portal in enemy_portals if portal.location.distance(enemy_castle) < 2500]:
-                    if elf.elf.location.distance(portal.location) < min:
-                        min = elf.elf.location.distance(portal.location)
+                    if elf.elf.location.distance(portal.location) < min_dist:
+                        min_dist = elf.elf.location.distance(portal.location)
                         portal_to_attack = portal
                 if portal_to_attack is not None and not elf.elf.already_acted:
                     if elf.elf.in_attack_range(portal_to_attack):
                         elf.elf.attack(portal_to_attack)
                     else:
-                        elf.simple_flank(game, portal_to_attack, (True, False, False))
+                        elf.flank(game, portal_to_attack, (True, False, False))
 
             else:  # if has nothing to attack attack the enemy castle
                 elf.attack(enemy_castle)
@@ -147,13 +146,22 @@ class Aggressive:
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]  # update self.my_elves
         self.attackDict = list(attackDict.values())  # update self.attackDict
         self.update_dirDict(elfDict)  # update dirDict
+        enemy_castle = game.get_enemy_castle()
+
+        if enemy_castle.current_health <= 10:  # rush the enemy castle if its low health
+            for elf in self.my_elves:
+                if elf.elf.in_attack_range(enemy_castle):
+                    elf.attack(enemy_castle)
+                else:
+                    elf.move_speed_invis(enemy_castle)
+            self.my_elves = []
 
         flanking_elves = self.build_portals(game, elfDict, attackDict)  # i mean basically build flanking portals
 
         self.attack(game)
 
         for portal in self.attackDict:  # spam lava giants while mana above 60
-            if (game.get_my_mana() - 40) < 60:
+            if (game.get_my_mana() - 40) < 100:
                 break
             if not portal.is_summoning:
                 portal.summon_lava_giant()
