@@ -19,6 +19,25 @@ class Elf:
         self.dest_manuver = None
         self.old_health_2_turns = []
 
+
+    @staticmethod
+    def get_closest_elf(game, loc, elfDict):
+        """
+        returns the key of the closest elf to the designated location
+        :param game: game instance
+        :param loc: designated location
+        :param elfDict: elfDict..
+        :return: the key of the closest elf
+        """
+        min_dist = elfDict.values()[0].elf.distance(loc)
+        elfKey = elfDict.keys()[0]
+        for key in elfDict.keys():
+            if elfDict[key].elf.distance(loc) < min_dist:
+                min_dist = elfDict[key].elf.distance(loc)
+                elfKey = key
+        return elfKey
+
+
     def move(self, dest):
         self.elf.move_to(dest)
 
@@ -148,8 +167,8 @@ class Elf:
         center_point = self.elf.location
         trgt_point = center_point.towards(dest, radius)
         strt_alpha = get_alpha_from_points(center_point, trgt_point)
-        pos_alpha = strt_alpha + 5
-        neg_alpha = strt_alpha - 5
+        pos_alpha = (strt_alpha + 5) % 360
+        neg_alpha = (strt_alpha - 5) % 360
         neg_point = None
         pos_point = None
 
@@ -174,7 +193,7 @@ class Elf:
             self.elf.move_to(trgt_point)
             return True
         else:
-            while pos_alpha < (strt_alpha + 100) % 360 or neg_alpha > abs(strt_alpha - 100) % 360:
+            while pos_alpha < (strt_alpha + 100) % 360 or neg_alpha > (strt_alpha - 100) % 360:
                 pos_point = get_point_by_alpha(pos_alpha, center_point, trgt_point)
                 if is_safe(pos_point):
                     self.elf.move_to(pos_point)
@@ -186,7 +205,7 @@ class Elf:
                     self.elf.move_to(neg_point)
                     return True
                 neg_alpha -= 5
-                neg_alpha = abs(neg_alpha) % 360
+                neg_alpha = neg_alpha % 360
             self.elf.move_to(trgt_point)
             return True
         self.elf.move_to(dest)

@@ -49,4 +49,3 @@ def move_point_by_angle(axis, point, angle_delta):
     angle = get_alpha_from_points(axis, point)
     angle += angle_delta
     return get_point_by_alpha(math.radians(angle), axis, point)
-
