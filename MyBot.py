@@ -2,9 +2,8 @@ from elf_kingdom import *
 from Elf import *
 from Start import Start
 from Aggressive import Aggressive
-from Defense import Defense
 from Normal import Normal
-from Portals import *
+from Defense import Defense
 import flanking
 
 # old state:
@@ -107,12 +106,12 @@ def do_turn(game):
     if my_portals is None:  # sets list to list if its null
         my_portals = []
 
-    flank_elves = agrI.do_aggressive(game, elfDict, attackDict)  # delit dis
+    flank_elves = agrI.do_aggressive(game, elfDict, attackDict) # delit dis
     # choosing an attack mode:
     if need_defence(game):
         defI.do_defense(game, elfDict)
         print "Strat: defence"
-    if not alreadyNormal and len(my_portals) < 7 and game.turn < (my_castle.location.distance(enemy_castle) / 50):
+    if not alreadyNormal and len(my_portals) < 7 and game.turn < (my_castle.location.distance(enemy_castle) / 100):
         srtI.do_start(game, elfDict)
         print "Strat: start"
     elif must_have_portals(game, my_portals) and ((game.get_enemy_mana() < 100 and my_castle.current_health > 75) or (
