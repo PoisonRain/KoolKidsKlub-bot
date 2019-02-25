@@ -106,21 +106,21 @@ def do_turn(game):
     if my_portals is None:  # sets list to list if its null
         my_portals = []
 
-    flank_elves = agrI.do_aggressive(game, elfDict, attackDict) # delit dis
-    # choosing an attack mode:
-    if need_defence(game):
-        defI.do_defense(game, elfDict)
-        print "Strat: defence"
-    if not alreadyNormal and len(my_portals) < 7 and game.turn < (my_castle.location.distance(enemy_castle) / 100):
-        srtI.do_start(game, elfDict)
-        print "Strat: start"
-    elif must_have_portals(game, my_portals) and ((game.get_enemy_mana() < 100 and my_castle.current_health > 75) or (
-            enemy_castle.current_health and my_castle.current_health > 75)):
-        flank_elves = agrI.do_aggressive(game, elfDict, attackDict)
-        print "Strat: aggressive"
-    else:
-        flank_elves = nrmI.do_normal(game, elfDict, attackDict)
-        print "Strat: normal"
+    flank_elves = nrmI.do_normal(game, elfDict, attackDict) # delit dis
+    # # choosing an attack mode:
+    # if need_defence(game):
+    #     defI.do_defense(game, elfDict)
+    #     print "Strat: defence"
+    # if not alreadyNormal and len(my_portals) < 7 and game.turn < (my_castle.location.distance(enemy_castle) / 100):
+    #     srtI.do_start(game, elfDict)
+    #     print "Strat: start"
+    # elif must_have_portals(game, my_portals) and ((game.get_enemy_mana() < 100 and my_castle.current_health > 75) or (
+    #         enemy_castle.current_health and my_castle.current_health > 75)):
+    #     flank_elves = agrI.do_aggressive(game, elfDict, attackDict)
+    #     print "Strat: aggressive"
+    # else:
+    #     flank_elves = nrmI.do_normal(game, elfDict, attackDict)
+    #     print "Strat: normal"
     update_attackDict(game, flank_elves, game.get_my_portals())  # updating attackDict
 
     # update old state:
