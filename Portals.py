@@ -51,14 +51,13 @@ class Portals():
         return my_portals
 
     def portals_around_map_object(self, point, range, portal_list):
-        """
-        get a list of portals around a given point from a given list of portals to allow using on both enemy and
-        friendly portals
-        :param point: location on the map to search around, needs to be map object
-        :param range: range of which to count portals around the point
-        :param portal_list: list of portals to check if they are around the given point in the given range
-        :return: list of friendly or enemy portals around the given point in the given range
-        """
+        # docs is like this because the webkit gods DEMAND IT and whoever stands in their way will be a foribidden libary
+        # get a list of portals around a given point from a given list of portals to allow using on both enemy and
+        # friendly portals
+        # :param point: location on the map to search around, needs to be map object
+        # :param range: range of which to count portals around the point
+        # :param portal_list: list of portals to check if they are around the given point in the given range
+        # :return: list of friendly or enemy portals around the given point in the given range
         portals = []
         for portal in portal_list:
             if portal.distance(point) < range:
