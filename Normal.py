@@ -12,9 +12,10 @@ CASTLE_DEFENSE = 5000  # range of which elfs will try to destroy enemy portals, 
 ELF_DEFENSE_BOOST_RANGE = 400  # range of attack targets portal will spawn defense to help the elfs
 ELF_DEFENSE_BOOST_MANA = 100  # mana cap to spawn defense to help elfs attack
 ENEMY_FOUNTAIN_NO_PORTALS_RANGE = 400  # range of an enemy fountain of which there can be no enemy portals for us to
+PORTAL_SELF_DEFENSE_MANA_CAP = 80  # mana cap we must have for portals to defend itself
 
 
-# attack it( on elf's way back to base)
+# attack it( on elf's way back to base)  # wtf is this?
 
 
 class Normal:
@@ -89,13 +90,9 @@ class Normal:
             if not self.portal_on_location(game, middle_portal):
                 elf = elfDict[self.get_closest_elf(game, middle_portal, elfDict)]
                 elf.build_portal(middle_portal)
-                print
-                ' cock sucker'
             if not self.portal_on_location(game, left_portal):
                 elf = elfDict[self.get_closest_elf(game, left_portal, elfDict)]
                 elf.build_portal(left_portal)
-                print
-                ' cock sucker'
             if not self.portal_on_location(game, right_portal):
                 elf = elfDict[self.get_closest_elf(game, right_portal, elfDict)]
                 elf.build_portal(right_portal)
@@ -110,6 +107,7 @@ class Normal:
         """
         self.normal_update(game, elfDict, attackDict)
 
+        #self.normal_portal_defense(self.game.get_my_portals())  # test dis mojo
         self.maintain_defence(game, elfDict)  # doesnt work yet - eyal do it
 
         flanking_elves = self.build_portals(elfDict, attackDict)  # build the flanking poratls, might need to be in
@@ -117,8 +115,6 @@ class Normal:
         self.normal_elf_defendcastle(elfDict)
         self.normal_defense()  # defend the castle (if there are enemies in range)
 
-        print
-        attackDict
         if self.game.get_my_mana() >= LAVA_DRAIN_MANA_LIMIT:  # drain enemy mana if our mana is above our set limite
             self.normal_enemy_mana_drain(self.attackDict)
         if self.game.get_enemy_mana() < ENEMY_LOW_MANA_ATTACK and self.game.get_my_mana() > NORMAL_ATTACK_MODE_MANA_CAP:
@@ -128,6 +124,15 @@ class Normal:
         self.normal_elf_defendcastle(elfDict)
 
         return flanking_elves
+
+    def normal_portal_defense(self, portals):
+        """
+        summon defense if the mana cap is met and there is enemies to defend from
+        :param portals: list of portals to defend
+        :return: nuffin
+        """
+        for portal in portals:
+            self.portals.defend_portal(portal, PORTAL_SELF_DEFENSE_MANA_CAP)
 
     def normal_defense(self):
         """
@@ -242,11 +247,7 @@ class Normal:
                     if target is not None:
                         if len(self.my_elves) > i and not self.my_elves[i].elf.already_acted:
                             fountains_on_path = self.get_fountains_on_path(self.my_elves[i])
-                            print
-                            fountains_on_path
                             if len(fountains_on_path) > 0:
-                                print
-                                'lol wtfffff'
                                 self.my_elves[i].attack(fountains_on_path[0])
                             else:
                                 self.my_elves[i].attack(target)
@@ -283,10 +284,6 @@ class Normal:
                     self.portals.portals_around_map_object(fountain, ENEMY_FOUNTAIN_NO_PORTALS_RANGE,
                                                            self.game.get_enemy_portals())) == 0:
                 fountains.append(fountain)
-        print
-        'dddddd'
-        print
-        fountains
         return fountains
 
 

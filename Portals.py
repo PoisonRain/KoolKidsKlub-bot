@@ -70,14 +70,19 @@ class Portals:
         range(PORTAL_HELP_DEFEND_RANGE)
         :param portal: portal to defend
         :param mana_cap: the limit of which defense can be spawned
-        :return: return false if mana_cap is not met
+        :return: return false if mana_cap is not met or if there are no elfs in range
         """
+        elf_in_range = False
         count = 0
         if self.game.get_my_mana() < mana_cap:
             return False
         for elf in self.game.get_enemy_living_elves():  # for each enemy elf add 2 to count ( spawn more defense for elf)
             if portal.distance(elf) < PORTAL_SELF_DEFENSE_RANGE:
                 count += 2
+                elf_in_range = True
+        if not elf_in_range:
+            return False  # return if there are no elfs in range - so nuffin to defend from
+        elf_in_range = False  # reset it for future use
         for ice in self.game.get_enemy_ice_trolls():  # for each enemy ice add 1 ice to count of how many defense to spawn
             if portal().distance(ice) < PORTAL_SELF_DEFENSE_RANGE:
                 count += 1
@@ -90,7 +95,6 @@ class Portals:
                 # use all nearby portals(that are needed for the amount of enemies) to defend if they are within range
                 if not self.summon_defense(portal):
                     i -= 1
-
 
     def portals_defend_castle(self, mana_cap):
         """
