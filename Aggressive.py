@@ -57,6 +57,7 @@ class Aggressive:
         build portals at the designated flanking points
         """
         print "agressive: trying to build portals"
+
         def closest_attack_portal(Elf):
             if len(self.attackDict) == 0:
                 return 1
@@ -147,8 +148,9 @@ class Aggressive:
         self.attackDict = list(attackDict.values())  # update self.attackDict
         self.update_dirDict(elfDict)  # update dirDict
         enemy_castle = game.get_enemy_castle()
+        castle_low_health = 10
 
-        if enemy_castle.current_health <= 10:  # rush the enemy castle if its low health
+        if enemy_castle.current_health <= castle_low_health:  # rush the enemy castle if its low health
             for elf in self.my_elves:
                 if elf.elf.in_attack_range(enemy_castle):
                     elf.attack(enemy_castle)

@@ -15,28 +15,29 @@ class Elf:
         # used to remember where the user designated the elf to go last turn and where he actually went:
         self.moving_to = [Location(0, 0), Location(0, 0)]  # (user input, elf target)
         self.was_building = None  # used to check if the elf was building the previous turn
-        self.start_manuver = elf.location
+        self.start_manuver = elf.locationf
         self.dest_manuver = None
         self.old_health_2_turns = []
 
 
     @staticmethod
-    def get_closest_elf(game, loc, elfDict):
+    def get_closest_elf(loc, elfDict):
         """
-        returns the key of the closest elf to the designated location
+        returns the Elf object of elf that is the closest the designated location
         :param game: game instance
         :param loc: designated location
         :param elfDict: elfDict..
-        :return: the key of the closest elf
+        :return: Elf object of the closest elf
         """
-        min_dist = elfDict.values()[0].elf.distance(loc)
-        elfKey = elfDict.keys()[0]
-        for key in elfDict.keys():
-            if elfDict[key].elf.distance(loc) < min_dist:
-                min_dist = elfDict[key].elf.distance(loc)
-                elfKey = key
-        return elfKey
-
+        elves = elfDict.values()
+        min_dist = elves[0].elf.distance(loc)
+        closest_elf = elves[0]
+        for Elf in elves[1:]:
+            tmp_dist = Elf.elf.distance(loc)
+            if tmp_dist < min_dist:
+                min_dist = tmp_dist
+                closest_elf = Elf
+        return closest_elf
 
     def move(self, dest):
         self.elf.move_to(dest)
