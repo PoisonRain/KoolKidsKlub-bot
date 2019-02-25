@@ -1,6 +1,6 @@
 from elf_kingdom import *
 
-class Defence:
+class Defense:
     def __init__(self, game, elfDict):
         self.game = game
         self.elfDict = elfDict

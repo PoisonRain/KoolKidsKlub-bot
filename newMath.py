@@ -25,7 +25,7 @@ def get_point_by_alpha(alpha, center_point, trgt_point):
     :param alpha: the angle
     :param center_point: the center of the circle
     :param trgt_point: a point on the circle
-    :return: a new point on the circle at the provided angleit
+    :return: a new point on the circle at the provided angle
     """
     radius = center_point.distance(trgt_point)
     center_point = location_to_tuple(center_point)
