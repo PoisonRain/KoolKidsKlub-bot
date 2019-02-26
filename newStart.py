@@ -1,10 +1,12 @@
 from elf_kingdom import *
 from newMath import *
 
+locs = []
+
 class Start:
     """ make a starting frame for the game, build starter portals, fountains etc 
     for normal to maintain"""
-    def build_structure_ring(self, game, elf, radius_from_castle, amount, structure_type = 0):
+    def get_structure_ring_locations(self, game, elf, radius_from_castle, amount, structure_type = 0):
         """ builds a semi-ring of a structure (0 - portal, 1 - fountain) in a certain
         radius from our castle to the enemy castle"""
         start_location = game.get_my_castle().location
@@ -31,9 +33,6 @@ class Start:
                     
                 neg_alpha -= 5
                 
-                print pos_alpha
-                print neg_alpha
-                
         print target_points  
         return target_points
     
@@ -49,3 +48,19 @@ class Start:
             if portal_location.in_range(other_location, game.portal_size*2):# 100 is a random number to prevent them from being stuck together
                 return False
         return True
+        
+    
+    def build_structure_ring(self, locs, my_elves, elfDict):
+        for i in xrange(len(my_elves)):
+            if i < len(locs):
+                if elfDict[my_elves[i].unique_id].build_portal(locs[i]):
+                    locs.remove(locs[i])
+
+""" add the following code to do_turn for testing """
+#  strtI = newStart.Start()
+#     global defense_portal_locs
+#     if game.turn == 1:
+#         defense_portal_locs = strtI.get_structure_ring_locations(game, elfDict[my_elves[0].unique_id], 1000, 10)
+    
+#     if defense_portal_locs != []:
+#         strtI.build_structure_ring(defense_portal_locs, my_elves, elfDict)
