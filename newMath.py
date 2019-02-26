@@ -16,7 +16,9 @@ def get_alpha_from_points(center_point, trgt_point):
 
     a = math.acos(trgt_point[0] / (center_point[0] + radius))
 
-    return math.degrees(a)
+    if trgt_point[1] > center_point[1]:
+        return math.degrees(a)
+    return 360 - math.degrees(a)
 
 
 def get_point_by_alpha(alpha, center_point, trgt_point):
