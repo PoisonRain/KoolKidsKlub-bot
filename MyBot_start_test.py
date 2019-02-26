@@ -106,7 +106,7 @@ def do_turn(game):
     if my_portals is None:  # sets list to list if its null
         my_portals = []
 
-    srtI.do_start(elfDict)
+    srtI.do_start(game, elfDict)
     # # choosing an attack mode:
     # if need_defence(game):
     #     defI.do_defense(game, elfDict)

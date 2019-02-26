@@ -9,7 +9,7 @@ class Start:
     """ make a starting frame for the game, build starter portals, fountains etc
     for normal to maintain"""
 
-    def __init__(self, game, elfDict, portal_amount=4, portal_range=1500, fountain_amount=4, fountain_range=None):
+    def __init__(self, game, elfDict, portal_amount=4, portal_range=None, fountain_amount=4, fountain_range=None):
         """
         initiates start
         :param game: the game instance
@@ -20,7 +20,9 @@ class Start:
         :param fountain_range: the radius the fountains should be built from my_castle
         """
         if fountain_range is None:
-            fountain_range = game.castle_size + game.mana_fountain_size + 100
+            fountain_range = game.castle_size + game.mana_fountain_size + 50
+        if portal_range is None:
+            portal_range = fountain_range + game.portal_size * 2
         self.game = game
         self.elfDict = elfDict
         self.defense_portal_locs = self.get_defence_portals_ring_locations(game, portal_range, portal_amount)
@@ -64,9 +66,9 @@ class Start:
         :param object_type: 0 for portals, 1 for fountains
         :return:
         """
-        target_points = []
-        if amount % 2 != 0:
-            target_points.append(start_location)  # list of locations to build portals in
+        target_points = [start_location]
+        if amount % 2 == 0:
+            amount += 1
         strt_alpha = get_alpha_from_points(axis, start_location)
         pos_alpha = strt_alpha + 5
         neg_alpha = strt_alpha - 5
@@ -89,6 +91,8 @@ class Start:
                     break
 
             neg_alpha -= 5
+        if amount % 2 == 0:
+            return target_points[1:]
         return target_points
 
     @staticmethod
