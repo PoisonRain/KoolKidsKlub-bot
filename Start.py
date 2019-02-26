@@ -169,10 +169,10 @@ class Start:
         :param elfDict: the elfDict dictanary
         :return: True if has finished building everything; else False
         """
-        if self.fountain_locs is []:
+        if self.fountain_locs is not []:
             self.fountain_locs = self.build_structure_ring(self.fountain_locs, elfDict, 1)
             return False
-        elif self.defense_portal_locs is []:
+        elif self.defense_portal_locs is not []:
             self.defense_portal_locs = self.build_structure_ring(self.defense_portal_locs, elfDict, 0)
             return False
         return True
