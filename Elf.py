@@ -93,10 +93,21 @@ class Elf:
 
     def build_portal(self, tgt):  # walks to and builds a portal at a location
         """returns wether or not the lef built the portal"""
-    
+
         if tgt is not None and not self.elf.already_acted:
             if self.elf.location.equals(tgt) and self.elf.can_build_portal():
                 self.elf.build_portal()
+                return True
+            else:
+                self.elf.move_to(tgt)
+        return False
+
+    def build_fountain(self, tgt):  # walks to and builds a portal at a location
+        """returns wether or not the lef built the portal"""
+
+        if tgt is not None and not self.elf.already_acted:
+            if self.elf.location.equals(tgt) and self.elf.can_build_mana_fountain():
+                self.elf.build_mana_fountain()
                 return True
             else:
                 self.elf.move_to(tgt)
