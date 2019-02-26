@@ -57,6 +57,8 @@ class Start:
     
     def build_structure_ring(self, locs, elfDict):
         elfDict = dict(elfDict)
+        locs = list(locs)
+        
         for loc in locs:
             worker_elf = Elf.Elf.get_closest_elf(loc, elfDict)
             did_build = worker_elf.build_portal(loc)
@@ -83,7 +85,8 @@ class Start:
 #  strtI = newStart.Start()
 #     global defense_portal_locs
 #     if game.turn == 1:
-#         defense_portal_locs = strtI.get_structure_ring_locations(game, elfDict[my_elves[0].unique_id], 1000, 4)
+#         defense_portal_locs = strtI.get_structure_ring_locations(game, elfDict[my_elves[0].unique_id], 2500, 5)
     
 #     if defense_portal_locs != []:
-#         strtI.build_structure_ring(defense_portal_locs, elfDict)
+#         defense_portal_locs = strtI.build_structure_ring(defense_portal_locs, elfDict)
+#         print elfDict
