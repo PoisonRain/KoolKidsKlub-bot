@@ -9,7 +9,7 @@ class Start:
     """ make a starting frame for the game, build starter portals, fountains etc
     for normal to maintain"""
 
-    def __init__(self, game, elfDict, portal_amount=4, portal_range=1500, fountain_amount=2, fountain_range=None):
+    def __init__(self, game, elfDict, portal_amount=4, portal_range=1500, fountain_amount=4, fountain_range=None):
         """
         initiates start
         :param game: the game instance
@@ -163,16 +163,18 @@ class Start:
                 newDict[elf_id] = elfDict[elf_id]
         return newDict
 
-    def do_start(self, elfDict):
+    def do_start(self, game, elfDict):
         """
         runs one turn in start
         :param elfDict: the elfDict dictanary
         :return: True if has finished building everything; else False
         """
-        if self.fountain_locs is not []:
+        self.game = game
+        if self.fountain_locs != []:
+            print self.fountain_locs
             self.fountain_locs = self.build_structure_ring(self.fountain_locs, elfDict, 1)
             return False
-        elif self.defense_portal_locs is not []:
+        elif self.defense_portal_locs != []:
             self.defense_portal_locs = self.build_structure_ring(self.defense_portal_locs, elfDict, 0)
             return False
         return True
