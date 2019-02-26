@@ -60,10 +60,23 @@ class Start:
         for loc in locs:
             worker_elf = Elf.Elf.get_closest_elf(loc, elfDict)
             did_build = worker_elf.build_portal(loc)
-            elfDict.pop(worker_elf, None)
+            print did_build
+            elfDict.pop(worker_elf.elf.unique_id, None)
             if did_build:
                 locs.remove(loc)
+            if not elfDict:
+                break
         return locs
+    
+    
+    def get_living_elves_dict(self, elfDict):
+        newDict = {}
+        print elfDict
+        for elf_id in elfDict:
+            print elf_id
+            if elfDict[elf_id].elf.is_alive():
+                newDict[elf_id] = elfDict[elf_id]
+        return newDict
                 
 
 """ add the following code to do_turn for testing """
