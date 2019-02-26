@@ -13,25 +13,27 @@ class Start:
         target_points = [end_location] #list of locations to build portals in
         
         strt_alpha = get_alpha_from_points(start_location, end_location)
-        pos_alpha = strt_alpha+3
-        neg_alpha = pos_alpha-3
+        pos_alpha = strt_alpha+5
+        neg_alpha = strt_alpha-5
         
-        while len(target_points) < amount and pos_alpha < 720 and neg_alpha > -720:
-                
-                pos_point = get_point_by_alpha(pos_alpha, start_location, end_location)
+        while len(target_points) < amount and pos_alpha < strt_alpha+360 and neg_alpha > strt_alpha-360:
+               
+                pos_point = get_point_by_alpha(pos_alpha % 360, start_location, end_location)
                 if self.can_build_portals_by_list(game, pos_point, target_points):
                     target_points.append(pos_point)
                     print pos_point
                     
-                pos_alpha += 3
-                pos_alpha = pos_alpha % 360
-                neg_point = get_point_by_alpha(neg_alpha, start_location, end_location)
+                pos_alpha += 5
+                neg_point = get_point_by_alpha(neg_alpha % 360, start_location, end_location)
                 if self.can_build_portals_by_list(game, neg_point, target_points):
                     target_points.append(neg_point)
                     print neg_point
                     
-                neg_alpha -= 3
-                neg_alpha = neg_alpha % 360
+                neg_alpha -= 5
+                
+                print pos_alpha
+                print neg_alpha
+                
         print target_points  
         return target_points
     
@@ -44,6 +46,6 @@ class Start:
         if not self.can_build_portal_at_updated(game, portal_location):
             return False
         for other_location in future_portals_list:
-            if portal_location.in_range(other_location, game.portal_size):# 100 is a random number to prevent them from being stuck together
+            if portal_location.in_range(other_location, game.portal_size*2):# 100 is a random number to prevent them from being stuck together
                 return False
         return True
