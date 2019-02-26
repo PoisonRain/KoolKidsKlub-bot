@@ -15,7 +15,7 @@ class Elf:
         # used to remember where the user designated the elf to go last turn and where he actually went:
         self.moving_to = [Location(0, 0), Location(0, 0)]  # (user input, elf target)
         self.was_building = None  # used to check if the elf was building the previous turn
-        self.start_manuver = elf.locationf
+        self.start_manuver = elf.location
         self.dest_manuver = None
         self.old_health_2_turns = []
 
@@ -92,11 +92,15 @@ class Elf:
                 self.elf.move_to(tgt)
 
     def build_portal(self, tgt):  # walks to and builds a portal at a location
+        """returns wether or not the lef built the portal"""
+    
         if tgt is not None and not self.elf.already_acted:
             if self.elf.location.equals(tgt) and self.elf.can_build_portal():
                 self.elf.build_portal()
+                return True
             else:
                 self.elf.move_to(tgt)
+        return False
 
     def flank(self, game, dest, ignore=(False, False, False)):
         """
@@ -130,7 +134,7 @@ class Elf:
                     self.elf.cast_speed_up()
                     print "casting SpeedUp"
                     return True
-        elif game.speed_up_multiplier‎ > 10 and game.elf_max_speed < 30 and not self.is_sped_up():
+        elif game.speed_up_multiplier > 10 and game.elf_max_speed < 30 and not self.is_sped_up():
             if self.elf.can_cast_speed_up():
                 print "probs iHaveStamina but who know any way casting SpeedUp"
                 self.elf.cast_speed_up()
