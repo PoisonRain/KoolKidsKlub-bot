@@ -94,18 +94,9 @@ class Normal:
         #self.normal_portal_defense(self.game.get_my_portals())  # test dis mojo
 
 
-        # an if with mana and our elfs taken into account
-
-
-
-
         # if self.game.get_enemy_mana() < ENEMY_LOW_MANA_ATTACK and self.game.get_my_mana() > NORMAL_ATTACK_MODE_MANA_CAP:  # attack more? might be used more
         #     self.normal_attack_lowMana(self.attackDict)  # become more aggresive in normal if the enemy is low on
             # on mana and we have enough.
-
-        self.normal_elf_defendcastle(elfDict)
-
-        return flanking_elves
 
     def normal_portal_defense(self, portals):
         """
@@ -122,6 +113,20 @@ class Normal:
         """
         if self.game.get_my_mana() > DEFENSE_MANA_CAP:
             self.portals.dumb_castle_defense(DEFENSE_MANA_CAP)
+
+    def new_mana_bait(self, mana_cap):
+        lava, ice = False, False
+        if self.game.get_my_mana() > mana_cap:
+            portals = self.portals.closest_portals_sorted(self.game.get_enemy_castle())
+            for creature in self.game.get_my_lava_giants():
+                if creature.distance(self.game.get_enemy_castle()) < MANE_DRAIN_RANGE:
+                    lava = True
+            for creature in self.game.get_enemy_ice_trolls():
+                if creature.distance(self.game.get_enemy_castle()) < MANE_DRAIN_RANGE:
+                    ice = True
+            if lava and ice and portals[0].can_summon_ice_troll():
+                portals[0].summon_ice_troll()
+
 
     def normal_update(self, game, elfDict, attackDict):
         """
@@ -156,7 +161,7 @@ class Normal:
         drains enemy mana
         :param attack_portals: portals used to attack
         """
-        lava = ice = True
+        lava, ice = True, True
         for creature in self.game.get_my_lava_giants():
             if creature.distance(self.game.get_enemy_castle()) < MANE_DRAIN_RANGE:
                 lava = False
@@ -167,7 +172,7 @@ class Normal:
             for portal in attack_portals:
                 if portal.can_summon_lava_giant():
                     portal.summon_lava_giant()
-                    lava = ice = True
+                    lava, ice = True, True
 
     def normal_attack_lowMana(self, attack_portals):
         """
