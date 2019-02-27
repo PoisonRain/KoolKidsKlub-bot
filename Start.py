@@ -9,7 +9,7 @@ class Start:
     """ make a starting frame for the game, build starter portals, fountains etc
     for normal to maintain"""
 
-    def __init__(self, game, elfDict, portal_amount=4, portal_range=None, fountain_amount=4, fountain_range=None):
+    def __init__(self, game, elfDict, portal_amount=4, portal_range=2000, fountain_amount=4, fountain_range=None):
         """
         initiates start
         :param game: the game instance
