@@ -66,9 +66,9 @@ class Start:
         :param object_type: 0 for portals, 1 for fountains
         :return:
         """
-        target_points = [start_location]
-        if amount % 2 == 0:
-            amount += 1
+        target_points = []
+        if amount%2 != 0:
+            target_points.append(start_location)  # list of locations to build portals in
         strt_alpha = get_alpha_from_points(axis, start_location)
         pos_alpha = strt_alpha + 5
         neg_alpha = strt_alpha - 5
