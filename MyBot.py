@@ -20,66 +20,6 @@ max_dist_from_castle = 12000
 defence_portal_dist = 2000  # portals we consider as our defence portals
 
 
-def update_attackDict(game, my_elves, my_portals):
-    global attackDict, old_my_portals, max_dist_from_castle
-    attack_portal = None
-    if my_portals:
-        for uid in attackDict.keys():  # delete destroyed portals
-            if uid not in [portal.unique_id for portal in my_portals]:
-                del attackDict[uid]
-
-        for elf in my_elves:  # add new attack portals
-            if elf.elf.is_building is False and elf.was_building is True:
-                for portal in my_portals:
-                    # d = portal.location
-                    if portal not in old_my_portals and portal.distance(game.get_enemy_castle()) < max_dist_from_castle:
-                        attack_portal = portal
-                        break
-                if attack_portal is not None:
-                    attackDict[attack_portal.unique_id] = attack_portal
-                elf.was_building = False
-    else:
-        attackDict.clear()
-
-
-def update_elfDict(game, my_elves):
-    global elfDict
-    if my_elves:  # add new and delete old elves from the dictionary
-        for elf in my_elves:  # add new
-            if elf.unique_id not in elfDict.keys():
-                elfDict[elf.unique_id] = Elf(game, elf)
-
-        for uid in elfDict.keys():  # delete old
-            if uid not in [elf.unique_id for elf in my_elves]:
-                del elfDict[uid]
-    else:  # if we have no elves just clear the dictionary
-        elfDict.clear()
-
-    for elf in elfDict.values():  # update game for all elf objects
-        elf.game = game
-
-
-def must_have_portals(game, elfDict):
-    """
-    :return: true if we have all the portals we consider as must have, else returns false
-    """
-
-    # variable future to change
-    defence_portal_amout = 1
-
-    global defence_portal_dist
-    my_castle = game.get_my_castle()
-    my_portals = game.get_my_portals()
-    defence_portals = [portal for portal in my_portals if portal.location.distance(my_castle) <= defence_portal_dist]
-    if len(defence_portals) < defence_portal_amout:  # need more defence portals
-        return False
-    return True
-
-
-def need_defence(game):
-    pass
-
-
 def do_turn(game):
     # vars
     global elfDict, attackDict, agrI, nrmI, srtI, defI, old_my_portals, old_my_castle_health_3_turns, start_done
@@ -111,22 +51,15 @@ def do_turn(game):
         my_portals = []
 
     #choosing an attack mode:
-    if need_defence(game):
-        defI.do_defense(game, elfDict)
-        print "Strat: defence"
-    if not start_done and game.turn < (my_castle.location.distance(enemy_castle) / 100):
-        start_done = srtI.do_start(game, elfDict)
-        print "Strat: start"
-    elif must_have_portals(game, my_portals) and ((game.get_enemy_mana() < 100 and my_castle.current_health > 75) or (
-            enemy_castle.current_health and my_castle.current_health > 75)):
+    if agrI.get_aggresive_score(game):
+        print "aggressive mode"
         agrI.do_aggressive(game, elfDict)
-        print "Strat: aggressive"
-    else:  # delit dis
-        agrI.do_aggressive(game, elfDict)
-    #else:#
-    #    flank_elves = nrmI.do_normal(game, elfDict, attackDict)
-    #    print "Strat: normal"
-    #update_attackDict(game, flank_elves, game.get_my_portals())  # updating attackDict
+    elif not start_done and game.turn < (my_castle.location.distance(enemy_castle) / 100):
+        print "start mode"
+        srtI.do_start(game, elfDict)
+    else:
+        print "normal mode"
+        nrmI.do_normal(game, elfDict)
 
     # update old state:
     old_my_portals = my_portals
@@ -135,3 +68,21 @@ def do_turn(game):
     for elf in elfDict.values():
         elf.old_health_2_turns.append(elf.elf.current_health)
         elf.old_health_2_turns = elf.old_health_2_turns[:2]
+
+
+def update_elfDict(game, my_elves):
+    global elfDict
+    if my_elves:  # add new and delete old elves from the dictionary
+        for elf in my_elves:  # add new
+            if elf.unique_id not in elfDict.keys():
+                elfDict[elf.unique_id] = Elf(game, elf)
+
+        for uid in elfDict.keys():  # delete old
+            if uid not in [elf.unique_id for elf in my_elves]:
+                del elfDict[uid]
+    else:  # if we have no elves just clear the dictionary
+        elfDict.clear()
+
+    for elf in elfDict.values():  # update game for all elf objects
+        elf.game = game
+
