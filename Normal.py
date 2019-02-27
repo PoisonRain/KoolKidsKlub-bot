@@ -12,7 +12,7 @@ CASTLE_DEFENSE = 3000  # range of which elfs will try to destroy enemy portals, 
 ELF_DEFENSE_BOOST_RANGE = 400  # range of attack targets portal will spawn defense to help the elfs
 ELF_DEFENSE_BOOST_MANA = 100  # mana cap to spawn defense to help elfs attack
 ENEMY_FOUNTAIN_NO_PORTALS_RANGE = 400  # range of an enemy fountain of which there can be no enemy portals for us to
-PORTAL_SELF_DEFENSE_MANA_CAP = 80  # mana cap we must have for portals to defend itself
+PORTAL_SELF_DEFENSE_MANA_CAP = 100  # mana cap we must have for portals to defend itself
 
 
 # attack it( on elf's way back to base)  # wtf is this?
@@ -82,8 +82,9 @@ class Normal:
         self.normal_update(game, elfDict, attackDict)
         self.aggressive.update_attack_portals(game)
 
+        self.portals.dumb_portal_defense(PORTAL_SELF_DEFENSE_MANA_CAP)
         self.normal_defense()  # defend the castle (if there are enemies in range)
-        # self.aggressive.build_portals(game, elfDict)  # build the flanking poratls, might need to be in
+        self.aggressive.build_portals(game, elfDict)  # build the flanking poratls, might need to be in
         self.start.do_start(game, elfDict)  # maintain defense portals and fountains
 
         self.normal_elf_defendcastle(elfDict)  # destroy buildings in range of defense radius(CASTLE_DEFENSE)
@@ -112,17 +113,18 @@ class Normal:
         """
         if self.game.get_my_mana() > DEFENSE_MANA_CAP:
             self.portals.dumb_castle_defense(DEFENSE_MANA_CAP)
+            self.portals.dumb_portal_defense(PORTAL_SELF_DEFENSE_MANA_CAP)
 
     def new_mana_bait(self, mana_cap):
         lava, ice = False, False
         if self.game.get_my_mana() > mana_cap:
             portals = self.portals.closest_portals_sorted(self.game.get_enemy_castle())
-            for creature in self.game.get_my_lava_giants():
-                if creature.distance(self.game.get_enemy_castle()) < MANE_DRAIN_RANGE:
-                    lava = True
-            for creature in self.game.get_enemy_ice_trolls():
-                if creature.distance(self.game.get_enemy_castle()) < MANE_DRAIN_RANGE:
-                    ice = True
+            if len(self.game.get_my_lava_giants()) == 0 and len(self.game.get_enemy_ice_trolls()) == 0:
+                lava, ice = True, True
+            else:
+                closest_creature = self.sorted_map_objects(self.game.get_enemy_castle(),(self.game.get_my_lava_giants(), self.game.get_enemy_ice_trolls()))
+                if self.game.get_enemy_castle().distance(closest_creature[0]):
+                    lava, ice = True, True
             if lava and ice and portals[0].can_summon_ice_troll():
                 portals[0].summon_ice_troll()
 
