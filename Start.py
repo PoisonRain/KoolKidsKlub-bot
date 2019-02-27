@@ -27,7 +27,9 @@ class Start:
         self.game = game
         self.elfDict = elfDict
         self.defense_portal_locs = self.get_defence_portals_ring_locations(game, portal_range, portal_amount)
+        self.defense_portal_locs_save = self.defense_portal_locs
         self.fountain_locs = self.get_fountain_ring_locations(game, fountain_range, fountain_amount)
+        self.fountain_locs_save = self.fountain_locs_save
 
     def get_fountain_ring_locations(self, game, radius_from_castle, amount):
         """
