@@ -29,8 +29,12 @@ def get_point_by_alpha(alpha, center_point, trgt_point):
     """
     radius = center_point.distance(trgt_point)
     alpha = math.radians(alpha)
-    x = center_point.col + radius * math.cos(alpha)
-    y = center_point.row + radius * math.sin(alpha)
+    if alpha < math.pi:
+        x = center_point.col + radius * math.cos((math.pi/2)-alpha)
+        y = center_point.row + radius * math.sin((math.pi/2)-alpha)
+    else:
+        x = center_point.col + radius * math.cos(alpha)
+        y = center_point.row + radius * math.sin(alpha)
 
     return Location(int(y), int(x))
 
@@ -45,4 +49,4 @@ def move_point_by_angle(axis, point, angle_delta):
     """
     angle = get_alpha_from_points(axis, point)
     angle += angle_delta
-    return get_point_by_alpha(math.radians(angle), axis, point)
+    return get_point_by_alpha(angle, axis, point)
