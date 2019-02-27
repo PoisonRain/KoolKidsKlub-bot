@@ -26,7 +26,7 @@ class Normal:
      TODO: add uses for spells
      """
 
-    def __init__(self, game, elfDict, attackDict, aggressive, start):
+    def __init__(self, game, elfDict, aggressive, start):
         """
 
         :param aggressive: instance of aggressive mode, used to make attack portals
@@ -35,7 +35,6 @@ class Normal:
         self.game = game
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]
         self.switch_sides = -1  # switching side on the normal line
-        self.attackDict = list(attackDict.values())
         self.dirDict = {}
         self.old_my_portals = []
         self.aggressive = aggressive

@@ -20,26 +20,54 @@ max_dist_from_castle = 12000
 defence_portal_dist = 2000  # portals we consider as our defence portals
 
 
-def update_attackDict(game, my_elves, my_portals):
-    global attackDict, old_my_portals, max_dist_from_castle
-    attack_portal = None
-    if my_portals:
-        for uid in attackDict.keys():  # delete destroyed portals
-            if uid not in [portal.unique_id for portal in my_portals]:
-                del attackDict[uid]
+def do_turn(game):
+    # vars
+    global elfDict, attackDict, agrI, nrmI, srtI, defI, old_my_portals, old_my_castle_health_3_turns, start_done
+    my_elves = game.get_my_living_elves()
+    my_portals = game.get_my_portals()
+    enemy_castle = game.get_enemy_castle()
+    my_castle = game.get_my_castle()
+    flank_elves = []  # list of all elves that try to flank and build a portal
+    if agrI is None:
+        agrI = Aggressive(game, elfDict)
+    if srtI is None:
+        portal_amount = 3
+        fountain_amount = game.get_my_mana() / game.mana_fountain_cost
+        if fountain_amount < 1:
+            fountain_amount = 1
+        srtI = Start(game, elfDict, portal_amount, 1600, fountain_amount)
+    if nrmI is None:
+        nrmI = Normal(game, elfDict, agrI, srtI)
+    if defI is None:
+        defI = Defense(game, elfDict)
 
-        for elf in my_elves:  # add new attack portals
-            if elf.elf.is_building is False and elf.was_building is True:
-                for portal in my_portals:
-                    # d = portal.location
-                    if portal not in old_my_portals and portal.distance(game.get_enemy_castle()) < max_dist_from_castle:
-                        attack_portal = portal
-                        break
-                if attack_portal is not None:
-                    attackDict[attack_portal.unique_id] = attack_portal
-                elf.was_building = False
+    if game.turn == 1:
+        flanking.initialize(my_elves)
+
+    update_elfDict(game, my_elves)  # update elfDict
+
+    # fix None
+    if my_portals is None:  # sets list to list if its null
+        my_portals = []
+
+    #choosing an attack mode:
+    if agrI.get_aggresive_score(game) > 0 or enemy_castle.current_health < 16:
+        print "aggressive mode"
+        agrI.do_aggressive(game, elfDict)
+    elif not start_done and game.turn < (my_castle.location.distance(enemy_castle) / 100):
+        print "start mode"
+        start_done = srtI.do_start(game, elfDict)
     else:
-        attackDict.clear()
+        print "normal mode"
+        nrmI.do_normal(game, elfDict)
+
+    # update old state:
+    old_my_portals = my_portals
+    old_my_castle_health_3_turns.append(my_castle.current_health)
+    old_my_castle_health_3_turns = old_my_castle_health_3_turns[:3]
+    for elf in elfDict.values():
+        elf.old_health_2_turns.append(elf.elf.current_health)
+        elf.old_health_2_turns = elf.old_health_2_turns[:2]
 
 
 def update_elfDict(game, my_elves):
@@ -58,80 +86,3 @@ def update_elfDict(game, my_elves):
     for elf in elfDict.values():  # update game for all elf objects
         elf.game = game
 
-
-def must_have_portals(game, elfDict):
-    """
-    :return: true if we have all the portals we consider as must have, else returns false
-    """
-
-    # variable future to change
-    defence_portal_amout = 1
-
-    global defence_portal_dist
-    my_castle = game.get_my_castle()
-    my_portals = game.get_my_portals()
-    defence_portals = [portal for portal in my_portals if portal.location.distance(my_castle) <= defence_portal_dist]
-    if len(defence_portals) < defence_portal_amout:  # need more defence portals
-        return False
-    return True
-
-
-def need_defence(game):
-    pass
-
-
-def do_turn(game):
-    # vars
-    global elfDict, attackDict, agrI, nrmI, srtI, defI, old_my_portals, old_my_castle_health_3_turns, start_done
-    my_elves = game.get_my_living_elves()
-    my_portals = game.get_my_portals()
-    enemy_castle = game.get_enemy_castle()
-    my_castle = game.get_my_castle()
-    flank_elves = []  # list of all elves that try to flank and build a portal
-    if agrI is None:
-        agrI = Aggressive(game, elfDict)
-    if srtI is None:
-        portal_amount = 3
-        fountain_amount = game.get_my_mana() / game.mana_fountain_cost
-        if fountain_amount < 1:
-            fountain_amount = 1
-        srtI = Start(game, elfDict, portal_amount, 1600, fountain_amount)
-    if nrmI is None:
-        nrmI = Normal(game, elfDict, attackDict, agrI)
-    if defI is None:
-        defI = Defense(game, elfDict)
-
-    if game.turn == 1:
-        flanking.initialize(my_elves)
-
-    update_elfDict(game, my_elves)  # update elfDict
-
-    # fix None
-    if my_portals is None:  # sets list to list if its null
-        my_portals = []
-
-    #choosing an attack mode:
-    if need_defence(game):
-        defI.do_defense(game, elfDict)
-        print "Strat: defence"
-    if not start_done and game.turn < (my_castle.location.distance(enemy_castle) / 100):
-        start_done = srtI.do_start(game, elfDict)
-        print "Strat: start"
-    elif must_have_portals(game, my_portals) and ((game.get_enemy_mana() < 100 and my_castle.current_health > 75) or (
-            enemy_castle.current_health and my_castle.current_health > 75)):
-        agrI.do_aggressive(game, elfDict)
-        print "Strat: aggressive"
-    else:  # delit dis
-        agrI.do_aggressive(game, elfDict)
-    #else:#
-    #    flank_elves = nrmI.do_normal(game, elfDict, attackDict)
-    #    print "Strat: normal"
-    #update_attackDict(game, flank_elves, game.get_my_portals())  # updating attackDict
-
-    # update old state:
-    old_my_portals = my_portals
-    old_my_castle_health_3_turns.append(my_castle.current_health)
-    old_my_castle_health_3_turns = old_my_castle_health_3_turns[:3]
-    for elf in elfDict.values():
-        elf.old_health_2_turns.append(elf.elf.current_health)
-        elf.old_health_2_turns = elf.old_health_2_turns[:2]
