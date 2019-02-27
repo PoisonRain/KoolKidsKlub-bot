@@ -182,7 +182,7 @@ class Start:
                 locs.remove(loc)
 
         for loc in locs:
-            worker_elf = Elf.Elf.get_closest_elf(loc, elfDict)
+            worker_elf = Elf.Elf.get_closest_elf(loc, elfDict, True)
             try:
                 if structure_type == 0:
                     if worker_elf.elf.location.equals(loc) and worker_elf.elf.can_build_portal():

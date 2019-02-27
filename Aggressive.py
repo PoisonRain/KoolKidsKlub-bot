@@ -2,6 +2,7 @@ from elf_kingdom import *
 from math import sqrt
 from Start import Start
 from Portals import Portals
+from Elf import Elf
 
 
 class Aggressive:
@@ -60,7 +61,7 @@ class Aggressive:
             if game.turn == 150 or game.turn == 50 or (game.turn > 150 and game.turn % 200 == 0):
                 self.portal_locs = self.get_attack_portal_location(game, self.attack_portal_amount)
             if len([portal for portal in my_portals if portal.location.distance(enemy_castle.location) < 1500]) + \
-                len([elf for elf in game.get_my_living_elves() if elf.is_building == True]) < self.attack_portal_amount:
+                len([elf for elf in game.get_my_living_elves() if elf.is_building is True]) < self.attack_portal_amount:
                 self.not_built = self.portalutil.build_structure_ring_flanking(game, self.portal_locs, elfDict)
 
     def attack(self, game):
