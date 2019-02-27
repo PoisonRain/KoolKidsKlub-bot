@@ -2,7 +2,7 @@ from elf_kingdom import *
 
 CASTLE_DEFENSE_RANGE = 2000
 ICE_TO_LAVA_RATIO = 1
-PORTAL_SELF_DEFENSE_RANGE = 800
+PORTAL_SELF_DEFENSE_RANGE = 500
 PORTAL_HELP_DEFEND_RANGE = 200
 DEFENSE_PORTAL_RANGE = 2000
 CASTLE_DEFEND_FROM_ELFS = 800
@@ -239,7 +239,10 @@ class Portals:
                 portal.summon_ice_troll()
 
     def dumb_portal_defense(self, mana_cap):
-        for poratl in self.game.get_my_portals():
+        for portal in self.game.get_my_portals():
+            for elf in self.game.get_enemy_living_elves():
+                if portal.distance(elf) < PORTAL_SELF_DEFENSE_RANGE and portal.can_summon_ice_troll() and self.game.get_my_mana() > mana_cap:
+                    portal.summon_ice_troll()
 
 
 
