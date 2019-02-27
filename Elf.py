@@ -30,7 +30,7 @@ class Elf:
                 del elfDict[key]
 
     @staticmethod
-    def get_closest_elf(loc, elfDict, already_acted_check_False):
+    def get_closest_elf(loc, elfDict, already_acted_check=False):
         """
         returns the Elf object of elf that is the closest the designated location
         :param game: game instance
