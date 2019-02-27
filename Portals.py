@@ -57,7 +57,7 @@ class Portals:
                 closest = enemy
         return portal, closest, portal.distance(closest)
 
-    def portals_defend_castle2(self, mana_cap):
+    def portals_defend_castle(self, mana_cap):
         """
         defend the castle using defense portals ( defense portals are all portals in CASTLE_DEFENSE_RANGE of the castle)
         the defense gives priority to defend from lava golems and uses the closest portal to the closest enemy to the
@@ -169,45 +169,6 @@ class Portals:
                 if not self.summon_defense(portal):
                     print ' lol ree'
                     i -= 1
-
-    def portals_defend_castle(self, mana_cap):
-        """
-        summon ice trolls according to a ratio of lava / ice in a certain range of the castle
-        summon from the closest portal to the lava that isnt further from the castle than the lava
-         note: might have to keep count of ice's being made to prevent spam? TBD
-        :param mana_cap: mana limit we need to have to be able to attack
-        :return: nothing
-        TODO: fix the for loop i can be bigger than size of list.... mojo
-        """
-        enemy_lava = self.game.get_enemy_lava_giants()
-        count = 0
-        enemies_in_range = []
-        for elf in self.game.get_enemy_living_elves():
-            if self.game.get_my_castle().distance(elf) < CASTLE_DEFEND_FROM_ELFS:
-                enemies_in_range.append(elf)
-                count += 2
-        for lava in enemy_lava:  # get lavas in a certain range and put em in a list + count
-            if self.game.get_my_castle().distance(lava) < CASTLE_DEFENSE_RANGE:
-                enemies_in_range.append(lava)
-                #count += 1
-        for ice in self.game.get_my_ice_trolls():  # for each lava subtract an ice so prevent spam
-            if self.game.get_my_castle().distance(ice) < CASTLE_DEFENSE_RANGE:
-                count -= 1
-        closest_portals = self.closest_portals_sorted(self.game.get_my_castle())
-        if len(closest_portals) == 0:  # exit if we have no defense portals
-            return
-        for i in range(
-                count / ICE_TO_LAVA_RATIO):  # find the closest portal to lava giant that isnt further than the castle
-            if self.game.get_my_mana() < mana_cap:
-                return
-            portal = closest_portals[-1]
-            for p in closest_portals:
-                if (p.distance(enemies_in_range[i]) < portal.distance(enemies_in_range[i]) and p.distance(
-                        self.game.get_my_castle()) < enemies_in_range[i].distance(
-                        self.game.get_my_castle()) and p.can_summon_ice_troll()):
-                    portal = p
-                if self.game.get_my_castle().distance(portal) < DEFENSE_PORTAL_RANGE:
-                    portal.summon_ice_troll()
 
     def poratls_attack(self, attack_portals, mana_cap):
         """
