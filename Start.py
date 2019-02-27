@@ -9,20 +9,18 @@ class Start:
     """ make a starting frame for the game, build starter portals, fountains etc
     for normal to maintain"""
 
-    def __init__(self, game, elfDict, portal_amount=4, portal_range=None, fountain_amount=4, fountain_range=None):
+    def __init__(self, game, elfDict, portal_amount=4, portal_range=2000, fountain_amount=4, fountain_range=None):
         """
         initiates start
         :param game: the game instance
-        :param elfDict: the elfDict dictionary
-        :param portal_amount: the amount of defence portals to be built
+        :param elfDict: the elfDict dictenary
+        :param portal_amount: the amout of defence portals to be built
         :param portal_range: the radius the portals should be built from my_castle
-        :param fountain_amount: the amount of fountains to be built
+        :param fountain_amount: the amout of fountains to be built
         :param fountain_range: the radius the fountains should be built from my_castle
         """
         if fountain_range is None:
-            fountain_range = game.castle_size + game.mana_fountain_size + 50
-        if portal_range is None:
-            portal_range = fountain_range + game.portal_size * 2
+            fountain_range = game.castle_size + game.mana_fountain_size + 100
         self.game = game
         self.elfDict = elfDict
         self.defense_portal_locs = self.get_defence_portals_ring_locations(game, portal_range, portal_amount)
@@ -34,7 +32,7 @@ class Start:
         castle(degree shift from the line between both castles)
         :param game: the game instance
         :param radius_from_castle: how far away the points should be from the castle
-        :param amount: how many points, the more points the denser they'll be
+        :param amount: how many points, the more points the denser theyll be
         """
         start_location = game.get_my_castle().location  # change this to change the center point
         end_location = start_location.towards(game.get_enemy_castle().location,
@@ -48,7 +46,7 @@ class Start:
         castle(degree shift from the line between both castles)
         :param game: the game instance
         :param radius_from_castle: how far away the points should be from the castle
-        :param amount: how many points, the more points the denser they'll be
+        :param amount: how many points, the more points the denser theyll be
         """
         start_location = game.get_my_castle().location  # change this to change the center point
         end_location = start_location.towards(game.get_enemy_castle().location,
@@ -59,17 +57,16 @@ class Start:
     def get_object_ring_locations(self, game, axis, start_location, amount, object_type=0):
         """
         returns a list of where to place a semi ring of objects around a location
-        :param game: the game instance
-        :param axis: the axis (center) around where the object would be built
+        :param game: the game instence
+        :param axis: the axis (center) around where the object whould be built
         :param start_location: the first location (will be moving to the left and right from this location)
-        :param amount: the amount of location it will return
+        :param amount: the amout of location it will return
         :param object_type: 0 for portals, 1 for fountains
         :return:
         """
         target_points = []
         if amount % 2 != 0:
             target_points.append(start_location)  # list of locations to build portals in
-        else: amount += 1
         strt_alpha = get_alpha_from_points(axis, start_location)
         pos_alpha = strt_alpha + 5
         neg_alpha = strt_alpha - 5
@@ -85,15 +82,13 @@ class Start:
 
             pos_alpha += 5
             neg_point = get_point_by_alpha(neg_alpha % 360, axis, start_location)
-            if self.can_build_objects_by_list(game, pos_point, target_points, object_type):
+            if self.can_build_objects_by_list(game, neg_point, target_points, object_type):
                 target_points.append(neg_point)
                 print 'neg_point: ' + str(neg_point)
                 if len(target_points) >= amount:
                     break
 
             neg_alpha -= 5
-        if amount % 2 == 0:
-            return target_points[1:]
         return target_points
 
     @staticmethod
@@ -132,7 +127,7 @@ class Start:
     @staticmethod
     def build_structure_ring(locs, elfDict, structure_type=0):
         """
-        take the locations(that were generated in get_structure_ring_locations() and tries to build the portals there
+        take the locations(that were generated in get_structure_ring_locations() and trys to build the portals there
         using the closest elf to build each portal by order(technique might change in the future)
         if not built, returned in a list
         :param locs: the locations to build the portals
@@ -171,7 +166,7 @@ class Start:
     def do_start(self, game, elfDict):
         """
         runs one turn in start
-        :param elfDict: the elfDict dictionary
+        :param elfDict: the elfDict dictanary
         :return: True if has finished building everything; else False
         """
         self.game = game
