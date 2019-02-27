@@ -19,18 +19,30 @@ class Elf:
         self.dest_manuver = None
         self.old_health_2_turns = []
 
+    @staticmethod
+    def elfDict_not_acted(elfDict):
+        """
+        deletes all of the already acted elves
+        bewere modifies the origin
+        """
+        for key, elf in elfDict.items():
+            if elf.elf.already_acted:
+                del elfDict[key]
 
     @staticmethod
-    def get_closest_elf(loc, elfDict):
+    def get_closest_elf(loc, elfDict, already_acted_check=False):
         """
         returns the Elf object of elf that is the closest the designated location
         :param game: game instance
         :param loc: designated location
         :param elfDict: elfDict..
+        :param already_acted_check_False: if true then returns only elves that not acted yet
         :return: Elf object of the closest elf
         """
         if elfDict != {}:
             elves = elfDict.values()
+            if already_acted_check is False:
+                [elf for elf in elves if not elf.elf.already_acted]
             min_dist = elves[0].elf.distance(loc)
             closest_elf = elves[0]
             for Elf in elves[1:]:
@@ -40,40 +52,52 @@ class Elf:
                     closest_elf = Elf
             return closest_elf
 
+    def act(self):
+        """
+        :return: True if elf not acted this turn False else
+        """
+        if self.elf.already_acted:
+            return False
+        return True
+
     def move(self, dest):
-        self.elf.move_to(dest)
+        if self.act():
+            self.elf.move_to(dest)
 
     def move_speed_invis(self, tgt):
         """
         move with speed up and invisibility
         :param tgt: the final location
         """
-        if not self.is_invisible() and self.elf.can_cast_invisibility():
-            self.elf.cast_invisibility()
-        elif not self.is_sped_up() and self.elf.can_cast_speed_up():
+        if self.act():
+            if not self.is_invisible() and self.elf.can_cast_invisibility():
+                self.elf.cast_invisibility()
+            elif not self.is_sped_up() and self.elf.can_cast_speed_up():
                 self.elf.cast_speed_up()
-        else:
-            self.elf.move_to(tgt)
+            else:
+                self.elf.move_to(tgt)
 
     def move_speed(self, tgt):
         """
         move with speed up
         :param tgt: the final location
         """
-        if not self.is_sped_up() and self.elf.can_cast_speed_up():
-            self.elf.cast_speed_up()
-        else:
-            self.elf.move_to(tgt)
+        if self.act():
+            if not self.is_sped_up() and self.elf.can_cast_speed_up():
+                self.elf.cast_speed_up()
+            else:
+                self.elf.move_to(tgt)
 
     def move_invis(self, tgt):
         """
         move with invisibility
         :param tgt: the final location
         """
-        if not self.is_invisible() and self.elf.can_cast_invisibility():
-            self.elf.cast_invisibility()
-        else:
-            self.elf.move_to(tgt)
+        if self.act():
+            if not self.is_invisible() and self.elf.can_cast_invisibility():
+                self.elf.cast_invisibility()
+            else:
+                self.elf.move_to(tgt)
 
     def is_invisible(self):
         if len([spell for spell in self.elf.current_spells if type(spell) is Invisibility]) > 0:
@@ -95,7 +119,7 @@ class Elf:
     def build_portal(self, tgt):  # walks to and builds a portal at a location
         """returns wether or not the lef built the portal"""
 
-        if tgt is not None and not self.elf.already_acted:
+        if tgt is not None and not self.elf.already_acted and not self.elf.is_building:
             if self.elf.location.equals(tgt) and self.elf.can_build_portal():
                 self.elf.build_portal()
                 return True
@@ -106,12 +130,50 @@ class Elf:
     def build_fountain(self, tgt):  # walks to and builds a portal at a location
         """returns wether or not the lef built the portal"""
 
-        if tgt is not None and not self.elf.already_acted:
+        if tgt is not None and not self.elf.already_acted and not self.elf.is_building:
             if self.elf.location.equals(tgt) and self.elf.can_build_mana_fountain():
                 self.elf.build_mana_fountain()
                 return True
             else:
                 self.elf.move_to(tgt)
+        return False
+
+    def panic_mode(self, game, close_trolls=None, close_elves=None):
+        """
+        the elf sudenly has surviavle abilities AMAZING
+        :param game: game instence
+        :param close_trolls: list of all the trolls you consider as close (has default)
+        :param close_elves: list of all the elves you consider as close (has default)
+        :return:
+        """
+        if close_elves is None:
+            enemy_elves = game.get_enemy_living_elves()
+            distance_from_elves = int(game.elf_attack_range * 1.75)
+            close_elves = [elf for elf in enemy_elves if elf.location.distance(self.elf.location) < distance_from_elves]
+        if close_trolls is None:
+            enemy_trolls = game.get_enemy_ice_trolls()
+            distance_from_trolls = int(game.ice_troll_attack_range * 1.75)
+            close_trolls = [troll for troll in enemy_trolls if
+                            troll.location.distance(self.elf.location) < distance_from_trolls]
+
+        if len(close_trolls) + len(close_elves) > 0:
+            if self.elf.current_health / (len(close_trolls) + len(
+                    close_elves) / 0.75) < 2 and not self.is_invisible():  # checks if elf is close to die
+                if self.elf.can_cast_invisibility():
+                    print "casting Invisibility"
+                    self.elf.cast_invisibility()
+                    return True
+            elif self.elf.current_health / (len(close_trolls) + len(
+                    close_elves) / 0.75) < 1 and not self.is_sped_up():  # checks if elf is closer to die
+                if self.elf.can_cast_speed_up():
+                    self.elf.cast_speed_up()
+                    print "casting SpeedUp"
+                    return True
+        elif game.speed_up_multiplier > 10 and game.elf_max_speed < 30 and not self.is_sped_up():
+            if self.elf.can_cast_speed_up():
+                print "probs iHaveStamina but who know any way casting SpeedUp"
+                self.elf.cast_speed_up()
+                return True
         return False
 
     def flank(self, game, dest, ignore=(False, False, False)):
@@ -122,38 +184,21 @@ class Elf:
         :param ignore: a tuple that has 3 bool objects that indicate
         if you want to ignore (in this order) elf, portals, ice_trolls
         """
-        print "elf", self.elf, "is using the flank method:"
-        enemy_portals = game.get_enemy_portals()
-        enemy_elves = game.get_enemy_living_elves()
-        enemy_trolls = game.get_enemy_ice_trolls()
-        distance_from_portals = game.ice_troll_attack_range * 5
-        distance_from_elves = int(game.elf_attack_range * 1.75)
-        distance_from_trolls = int(game.ice_troll_attack_range * 1.75)
-        close_trolls = [troll for troll in enemy_trolls if
-                        troll.location.distance(self.elf.location) < distance_from_trolls]
-        close_elves = [elf for elf in enemy_elves if elf.location.distance(self.elf.location) < distance_from_elves]
+        if self.act():
+            print "elf", self.elf, "is using the flank method:"
+            enemy_portals = game.get_enemy_portals()
+            enemy_elves = game.get_enemy_living_elves()
+            enemy_trolls = game.get_enemy_ice_trolls()
+            distance_from_portals = game.ice_troll_attack_range * 5
+            distance_from_elves = int(game.elf_attack_range * 1.75)
+            distance_from_trolls = int(game.ice_troll_attack_range * 1.75)
+            close_trolls = [troll for troll in enemy_trolls if
+                            troll.location.distance(self.elf.location) < distance_from_trolls]
+            close_elves = [elf for elf in enemy_elves if elf.location.distance(self.elf.location) < distance_from_elves]
 
-        if len(close_trolls) + len(close_elves) > 0:
-            if self.elf.current_health / (len(close_trolls) + len(close_elves) / 0.75) < 2\
-                    and not self.is_invisible():  # checks if elf is close to die
-                if self.elf.can_cast_invisibility():
-                    print "casting Invisibility"
-                    self.elf.cast_invisibility()
-                    return True
-            elif self.elf.current_health / (len(close_trolls) + len(close_elves) / 0.75) < 1\
-                    and not self.is_sped_up():  # checks if elf is closer to die
-                if self.elf.can_cast_speed_up():
-                    self.elf.cast_speed_up()
-                    print "casting SpeedUp"
-                    return True
-        elif game.speed_up_multiplier > 10 and game.elf_max_speed < 30 and not self.is_sped_up():
-            if self.elf.can_cast_speed_up():
-                print "probs iHaveStamina but who know any way casting SpeedUp"
-                self.elf.cast_speed_up()
-                return True
-
-        print "going into the simple_flanking algorithm"
-        self.simple_flank(game, dest, ignore)
+            if not self.panic_mode(game, close_trolls, close_elves):
+                print "going into the simple_flanking algorithm"
+                self.simple_flank(game, dest, ignore)
 
     def simple_flank(self, game, dest, ignore=(False, False, False)):
         """
@@ -163,71 +208,72 @@ class Elf:
         :param ignore: a tuple that has 3 bool objects that indicate
         if you want to ignore (in this order) elf, portals, ice_trolls
         """
-        if self.elf.location.distance(dest) <= game.elf_max_speed:  # if you can go there in one leap just do it
+        if self.act():
+            if self.elf.location.distance(dest) <= game.elf_max_speed:  # if you can go there in one leap just do it
+                self.elf.move_to(dest)
+                return True
+
+            # define all variables
+            enemy_portals = game.get_enemy_portals()
+            enemy_elves = game.get_enemy_living_elves()
+            enemy_trolls = game.get_enemy_ice_trolls()
+            distance_from_portals = game.ice_troll_attack_range * 5
+            if distance_from_portals > game.rows / 4:
+                distance_from_portals = game.rows / 4
+            distance_from_elves = int(game.elf_attack_range * 1.75)
+            if distance_from_elves > game.rows / 4:
+                distance_from_elves = game.rows / 4
+            distance_from_trolls = int(game.ice_troll_attack_range * 1.75)
+            if distance_from_trolls > game.rows / 4:
+                distance_from_trolls = game.rows / 4
+            radius = self.elf.max_speed
+            center_point = self.elf.location
+            trgt_point = center_point.towards(dest, radius)
+            strt_alpha = get_alpha_from_points(center_point, trgt_point)
+            pos_alpha = (strt_alpha + 5) % 360
+            neg_alpha = (strt_alpha - 5) % 360
+            neg_point = None
+            pos_point = None
+
+            def is_safe(point):
+                """
+                checks if a point is safe
+                :param point: the point
+                :return: false if its not, else true
+                """
+                for elf in enemy_elves:
+                    if (dest.distance(elf) > distance_from_elves > elf.location.distance(point)) and not ignore[0]:
+                        return False
+                for portal in enemy_portals:
+                    if (dest.distance(portal) > distance_from_portals > portal.location.distance(point)) and not ignore[
+                        1]:
+                        return False
+                for troll in enemy_trolls:
+                    if (dest.distance(troll) > distance_from_trolls > troll.location.distance(point)) and not ignore[2]:
+                        return False
+                return True
+
+            if is_safe(trgt_point):  # if the point is safe just go there
+                self.elf.move_to(trgt_point)
+                return True
+            else:
+                while pos_alpha < (strt_alpha + 45) % 360 or neg_alpha > (strt_alpha - 45) % 360:
+                    pos_point = get_point_by_alpha(pos_alpha, center_point, trgt_point)
+                    if is_safe(pos_point):
+                        self.elf.move_to(pos_point)
+                        return True
+                    pos_alpha += 5
+                    pos_alpha = pos_alpha % 360
+                    neg_point = get_point_by_alpha(neg_alpha, center_point, trgt_point)
+                    if is_safe(neg_point):
+                        self.elf.move_to(neg_point)
+                        return True
+                    neg_alpha -= 5
+                    neg_alpha = neg_alpha % 360
+                self.elf.move_to(trgt_point)
+                return True
             self.elf.move_to(dest)
             return True
-
-        # define all variables
-        enemy_portals = game.get_enemy_portals()
-        enemy_elves = game.get_enemy_living_elves()
-        enemy_trolls = game.get_enemy_ice_trolls()
-        distance_from_portals = game.ice_troll_attack_range * 5
-        if distance_from_portals > game.rows / 4:
-            distance_from_portals = game.rows / 4
-        distance_from_elves = int(game.elf_attack_range * 1.75)
-        if distance_from_elves > game.rows / 4:
-            distance_from_elves = game.rows / 4
-        distance_from_trolls = int(game.ice_troll_attack_range * 1.75)
-        if distance_from_trolls > game.rows / 4:
-            distance_from_trolls = game.rows / 4
-        radius = self.elf.max_speed
-        center_point = self.elf.location
-        trgt_point = center_point.towards(dest, radius)
-        strt_alpha = get_alpha_from_points(center_point, trgt_point)
-        pos_alpha = (strt_alpha + 5) % 360
-        neg_alpha = (strt_alpha - 5) % 360
-        neg_point = None
-        pos_point = None
-
-        def is_safe(point):
-            """
-            checks if a point is safe
-            :param point: the point
-            :return: false if its not, else true
-            """
-            for elf in enemy_elves:
-                if (dest.distance(elf) > distance_from_elves > elf.location.distance(point)) and not ignore[0]:
-                    return False
-            for portal in enemy_portals:
-                if (dest.distance(portal) > distance_from_portals > portal.location.distance(point)) and not ignore[1]:
-                    return False
-            for troll in enemy_trolls:
-                if (dest.distance(troll) > distance_from_trolls > troll.location.distance(point)) and not ignore[2]:
-                    return False
-            return True
-
-        if is_safe(trgt_point):  # if the point is safe just go there
-            self.elf.move_to(trgt_point)
-            return True
-        else:
-            while pos_alpha < (strt_alpha + 100) % 360 or neg_alpha > (strt_alpha - 100) % 360:
-                pos_point = get_point_by_alpha(pos_alpha, center_point, trgt_point)
-                if is_safe(pos_point):
-                    self.elf.move_to(pos_point)
-                    return True
-                pos_alpha += 5
-                pos_alpha = pos_alpha % 360
-                neg_point = get_point_by_alpha(neg_alpha, center_point, trgt_point)
-                if is_safe(neg_point):
-                    self.elf.move_to(neg_point)
-                    return True
-                neg_alpha -= 5
-                neg_alpha = neg_alpha % 360
-            self.elf.move_to(trgt_point)
-            return True
-        self.elf.move_to(dest)
-        return True
-
 
     def manuver_move(self, game, dest, obstacle_list, flank_distance=1000):
         """
@@ -238,16 +284,17 @@ class Elf:
         :param flank_distance: how far from the obstacle should the elf swerve
         :param obstacle_list: a list of all of the obstacles to avoid
         """
-        if dest != self.dest_manuver:
-            self.dest_manuver = dest
-            self.start_manuver = self.elf.location
-        try:
-            obstacle_list = [flanking.location_to_tuple(obstacle.location) for obstacle in obstacle_list]
-        except:
-            obstacle_list = []
+        if self.act():
+            if dest != self.dest_manuver:
+                self.dest_manuver = dest
+                self.start_manuver = self.elf.location
+            try:
+                obstacle_list = [flanking.location_to_tuple(obstacle.location) for obstacle in obstacle_list]
+            except:
+                obstacle_list = []
 
-        return flanking.manuver_move(game, self.elf, flanking.location_to_tuple(self.start_manuver),
-                                     flanking.location_to_tuple(self.dest_manuver), flank_distance, obstacle_list)
+            return flanking.manuver_move(game, self.elf, flanking.location_to_tuple(self.start_manuver),
+                                         flanking.location_to_tuple(self.dest_manuver), flank_distance, obstacle_list)
 
     def move_normal(self, tgt, dist, dir=None, srt=None, fix=None):
         """

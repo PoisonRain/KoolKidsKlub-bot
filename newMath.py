@@ -20,7 +20,6 @@ def get_alpha_from_points(center_point, trgt_point):
     return math.degrees(a)
 
 
-
 def get_point_by_alpha(alpha, center_point, trgt_point):
     """
     returns a point on the cir_cle at a certain angle

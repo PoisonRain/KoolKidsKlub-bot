@@ -10,7 +10,7 @@ class Start:
     """ make a starting frame for the game, build starter portals, fountains etc
     for normal to maintain"""
 
-    def __init__(self, game, elfDict, portal_amount=3, portal_range=2000, fountain_amount=2, fountain_range=None):
+    def __init__(self, game, elfDict, portal_amount=3, portal_range=1600, fountain_amount=1, fountain_range=None):
         """
         initiates start
         :param game: the game instance
@@ -69,8 +69,6 @@ class Start:
         :return: a list of objects around the start_location facing end location
         """
         target_points = []
-        if amount % 2 != 0:
-            target_points.append(start_location)  # list of locations to build portals in
         strt_alpha = get_alpha_from_points(axis, start_location)
         pos_alpha = strt_alpha + 5
         neg_alpha = strt_alpha - 5
@@ -164,6 +162,50 @@ class Start:
         return locs
 
     @staticmethod
+    def build_structure_ring_flanking(game, locs, elfDict, structure_type=0):
+        """
+        take the locations(that were generated in get_structure_ring_locations() and tries to build the portals there
+        using the closest elf to build each portal by order(technique might change in the future)
+        if not built, returned in a list
+        :param locs: the locations to build the portals
+        :param elfDict: a dictionary of the Elf class instances
+        :param structure_type: 0 for portals, 1 for fountains
+        :return: the locations that were not yet built in this turn, and should be used for the next run of the function
+        """
+        elfDict = dict(elfDict)
+        locs = list(locs)
+
+        for loc in locs:
+            if Normal.Normal.portal_on_location(game, loc):
+                locs.remove(loc)
+
+        for loc in locs:
+            worker_elf = Elf.Elf.get_closest_elf(loc, elfDict, True)
+            try:
+                if structure_type == 0:
+                    if worker_elf.elf.location.equals(loc) and worker_elf.elf.can_build_portal():
+                        worker_elf.elf.build_portal()
+                        did_build = True
+                    else:
+                        worker_elf.flank(game, loc)
+                        did_build = False
+                else:
+                    if worker_elf.elf.location.equals(loc) and worker_elf.elf.can_build_mana_fountain():
+                        worker_elf.elf.build_mana_fountain()
+                        did_build = True
+                    else:
+                        worker_elf.flank(game, loc)
+                        did_build = False
+                elfDict.pop(worker_elf.elf.unique_id, None)
+                if did_build:
+                    locs.remove(loc)
+            except Exception as msg:
+                print msg
+            if not elfDict:
+                break
+        return locs
+
+    @staticmethod
     def get_living_elves_dict(elfDict):
         "takes in a dict of elves and returns a dict of only the living ones (was used for debugging)"""
         newDict = {}
@@ -180,12 +222,14 @@ class Start:
         :param elfDict: the elfDict dictionary
         :return: True if has finished building everything; else False
         """
+        elfDict = dict(elfDict)
         self.game = game
         if self.fountain_locs != []:
             print self.fountain_locs
             self.fountain_locs = self.build_structure_ring(game, self.fountain_locs, elfDict, 1)
-            return False
-        elif self.defense_portal_locs != []:
+            for key in [key for key, elf in elfDict.items() if elf.elf.already_acted]:
+                del elfDict[key]
+        if self.defense_portal_locs != []:
             self.defense_portal_locs = self.build_structure_ring(game, self.defense_portal_locs, elfDict, 0)
             return False
         return True

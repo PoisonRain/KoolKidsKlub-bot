@@ -19,6 +19,20 @@ class Portals:
         self.attackList = Attack_List()
         self.my_castle = game.get_my_castle()
 
+    @staticmethod
+    def get_portal_on_location(game, loc):
+        """
+        get the portal on the location
+        :param game: the game instence
+        :param loc: the location on which you check if the portal exists
+        :return: the portal if it exists False else
+        """
+        portals = game.get_my_portals()
+        for portal in portals:
+            if portal.location.equals(loc):
+                return portal
+        return False
+
     def portals_update(self, game):
         self.game = game
         self.portals = game.get_my_portals()

@@ -109,7 +109,6 @@ class Normal:
         """
         self.game = game  # update game
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]  # update self.my_elves
-        self.attackDict = list(attackDict.values())  # update self.attackDict
         self.game = game  # update self.game
         self.update_dirDict(elfDict)  # update dirDict
         self.portals.portals_update(game)  # update portals (the object)

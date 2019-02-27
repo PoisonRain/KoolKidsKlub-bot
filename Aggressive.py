@@ -1,5 +1,8 @@
 from elf_kingdom import *
 from math import sqrt
+from Start import Start
+from Portals import Portals
+from Elf import Elf
 
 
 class Aggressive:
@@ -7,27 +10,33 @@ class Aggressive:
     do aggressive things so basically zerg rush
     """
 
-    def __init__(self, game, elfDict, attackDict):
+    def __init__(self, game, elfDict):
         self.game = game
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]
         self.switch_sides = 1  # switching side on the normal line
-        self.attackDict = list(attackDict.values())
         self.dirDict = {}
         self.old_my_portals = []
+        self.portalutil = Start(game, elfDict)
+        self.portal_locs = self.get_attack_portal_location(game)
+        self.attack_portal_amount = 2
+        self.not_built = []
+        self.attack_portals = []
 
-    def update_dirDict(self, elfDict):
-        """
-        gets updated elfDict checks for new entries gives them in an altering manner a direction to go
-        and deletes dead elves from the dictionary
-        """
-        for uid in elfDict.keys():  # add new
-            if uid not in self.dirDict:
-                self.dirDict[uid] = self.switch_sides
-                self.switch_sides *= -1
-
-        for uid in self.dirDict.keys():  # delete old
-            if uid not in elfDict:
-                del self.dirDict[uid]
+    def update_attack_portals(self, game):
+        were_built_locs = list(self.portal_locs)
+        for loc in self.not_built:
+            try:
+                were_built_locs.remove(loc)
+            except:
+                pass
+        were_built_portals = []
+        for loc in were_built_locs:
+            portal = Portals.get_portal_on_location(game, loc)
+            if portal is not False and portal not in were_built_portals:
+                were_built_portals.append(portal)
+        self.attack_portals += were_built_portals
+        if len(self.attack_portals) > self.attack_portal_amount:
+            self.attack_portals = self.attack_portals[-self.attack_portal_amount:]
 
     def get_aggresive_score(self, game):
         hp_delta = game.get_my_castle().current_health - game.get_enemy_castle().current_health
@@ -40,57 +49,20 @@ class Aggressive:
 
         return hp_delta * hp_factor + attack_portals_built * attack_portals_factor + enemy_mana * enemy_mana_factor
 
-    def attack_portals_built(self, game):  # returns amount of portals built on a certain side
-        return len(self.attackDict)  # the side of thr rows needs to be checked
-
-    def outside_aggressive_buildportals(self, game, elfDict, attackDict):
-        self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]  # update self.my_elves
-        self.attackDict = list(attackDict.values())  # update self.attackDict
-        self.update_dirDict(elfDict)  # update dirDict
-
-        flanking_elves = self.build_portals(game, elfDict, attackDict)  # i mean basically build flanking portals
-
-        return flanking_elves
-
-    def build_portals(self, game, elfDict, attackDict):
+    def build_portals(self, game, elfDict):
         """
         build portals at the designated flanking points
         """
-        print "agressive: trying to build portals"
-
-        def closest_attack_portal(Elf):
-            if len(self.attackDict) == 0:
-                return 1
-            elf = Elf.elf  # quarries the elf object from Elf class
-            min_dist = elf.location.distance(self.attackDict[0])
-            for portal in self.attackDict[1:]:
-                dist = elf.location.distance(portal)
-                if dist < min_dist:
-                    min_dist = dist
-            return min_dist
-
-        enemy_castle = self.game.get_enemy_castle()
-        flanking_elves = []
-        attack_portal_amount = (game.get_myself().mana_per_turn * 3 // 40)
-        if attack_portal_amount < 2:
-            attack_portal_amount = 2
-        amount_of_assigned_elves = attack_portal_amount - len(self.attackDict)
-        distance_from_tgt = 600
-        if len(self.my_elves) < amount_of_assigned_elves:  # check if the amount of elves i want to assign is to big
-            amount_of_assigned_elves = len(self.my_elves)
-        elves_by_distance = sorted(self.my_elves, key=closest_attack_portal, reverse=True)
-
-        for elf in elves_by_distance[0:amount_of_assigned_elves]:  # build portals with all assigned elves
-            location_to_move = self.move_normal(game, enemy_castle.location, distance_from_tgt,
-                                                self.dirDict[elf.elf.unique_id])
-            if elf.elf.location.distance(location_to_move) < 50:  # check if elf is in designated location
-                if elf.elf.can_build_portal():  # if able to built portal
-                    elf.elf.build_portal()
-                    elf.was_building = True
-            else:  # if not at location to build move to the location
-                elf.flank(game, location_to_move)
-            flanking_elves.append(elf)
-        return flanking_elves
+        enemy_castle = game.get_enemy_castle()
+        my_portals = game.get_my_portals()
+        self.attack_portal_amount = (game.get_myself().mana_per_turn * 3 // 40)
+        if self.attack_portal_amount < 2:
+            self.attack_portal_amount = 2
+            if game.turn == 150 or game.turn == 50 or (game.turn > 150 and game.turn % 200 == 0):
+                self.portal_locs = self.get_attack_portal_location(game, self.attack_portal_amount)
+            if len([portal for portal in my_portals if portal.location.distance(enemy_castle.location) < 1500]) + \
+                len([elf for elf in game.get_my_living_elves() if elf.is_building is True]) < self.attack_portal_amount:
+                self.not_built = self.portalutil.build_structure_ring_flanking(game, self.portal_locs, elfDict)
 
     def attack(self, game):
         """
@@ -140,13 +112,26 @@ class Aggressive:
                     else:
                         elf.flank(game, portal_to_attack, (True, False, False))
 
+            elif len([fountain for fountain in game.get_enemy_mana_fountains() if
+                      fountain.location.distance(enemy_castle) < 2500]) > 0:  # attack enemy fountains
+                min_dist = self.game.rows + self.game.cols
+                fountain_to_attack = None
+                for fountain in [fountain for fountain in game.get_enemy_mana_fountains() if
+                               fountain.location.distance(enemy_castle) < 2500]:
+                    if elf.elf.location.distance(fountain.location) < min_dist:
+                        min_dist = elf.elf.location.distance(fountain.location)
+                        fountain_to_attack = fountain
+                if fountain_to_attack is not None and not elf.elf.already_acted:
+                    if elf.elf.in_attack_range(fountain_to_attack):
+                        elf.elf.attack(fountain_to_attack)
+                    else:
+                        elf.flank(game, fountain_to_attack, (True, False, False))
+
             else:  # if has nothing to attack attack the enemy castle
                 elf.attack(enemy_castle)
 
-    def do_aggressive(self, game, elfDict, attackDict):
+    def do_aggressive(self, game, elfDict):
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]  # update self.my_elves
-        self.attackDict = list(attackDict.values())  # update self.attackDict
-        self.update_dirDict(elfDict)  # update dirDict
         enemy_castle = game.get_enemy_castle()
         castle_low_health = 10
 
@@ -158,93 +143,41 @@ class Aggressive:
                     elf.move_speed_invis(enemy_castle)
             self.my_elves = []
 
-        flanking_elves = self.build_portals(game, elfDict, attackDict)  # i mean basically build flanking portals
+        self.build_portals(game, elfDict)  # i mean basically build flanking portals
+
+        self.update_attack_portals(game)
 
         self.attack(game)
-        print attackDict
-        for portal in self.attackDict:  # spam lava giants while mana above 60
-            if (game.get_my_mana() - 40) < 100:
+
+        for portal in self.attack_portals:  # spam lava giants while mana above 60
+            if (game.get_my_mana() - 40) < 60:
                 break
             if not portal.is_summoning:
                 portal.summon_lava_giant()
 
-        return flanking_elves
-
-    @staticmethod
-    def move_normal(game, tgt, dist, dir=None, srt=None, fix=None):
+    def get_attack_portal_location(self, game, amount=2):
         """
-        the elf (s) moves to a or b from :srt             a
-        where e is designated point :tgt      -->   s-----e
-        the distance from e to a|b is :dist               b
-        :param tgt: The point where you make a normal line to you
-        :param dist: The distance you want to go on the perpendicular line
-        :param dir: The direction you prefer to go in (up, left) = 1, (down, right) = -1
-        :param srt: Optional parameter, starting point; if not set is default to game.get_enemy_castle().location
-        :param fix: optional parameter if left None location will move to my_castle until portal is able to be build
-        else if set to 1 location will be moved towards tgt else if set to -1 location will be moved towards enemy_castle
-        :return: The location the elf should go in
+        :param game: game instence
+        :param amount: the amout of attack portals
+        :return: the locations on which you should build attack portals
         """
-        global pointA, pointB
-        if srt is None:
-            srt = game.get_my_castle().location
-
-        my_castle = game.get_my_castle()
+        radius = 800
+        radius_delta = 100
+        min_dist_efrom_enemy_portals = 300
         enemy_castle = game.get_enemy_castle()
-
-        x_a, y_a = float(tgt.col), float(tgt.row)
-        x_b, y_b = float(srt.col), float(srt.row)
-
-        x_d, y_d = x_a - x_b, y_a - y_b
-        d = sqrt(x_d ** 2 + y_d ** 2)
-
-        x_d /= d
-        y_d /= d
-
-        x_1, y_1 = x_a + dist * y_d, y_a - dist * x_d
-        x_2, y_2 = x_a - dist * y_d, y_a + dist * x_d
-
-        pointA = Location(int(y_1), int(x_1))
-        pointB = Location(int(y_2), int(x_2))
-
-        def in_boundaries(game, loc, dist):
-            if (dist < loc.row < game.rows - dist) and (dist < loc.col < game.cols - dist):
-                return True
-            return False
-
-        def check_if_able_to_build(loc):  # check if able to build a portal if not move the point over
-            global pointA, pointB
-            while not game.can_build_portal_at(pointA) and not pointA.equals(loc) and in_boundaries(game, pointA, 50):
-                pointA = pointA.towards(loc, 10)
-            while not game.can_build_portal_at(pointB) and not pointB.equals(loc) and in_boundaries(game, pointB, 50):
-                pointB = pointB.towards(loc, 10)
-            if pointA.equals(loc) or pointB.equals(loc):
-                print "REEE"
-
-        if fix == -1:
-            check_if_able_to_build(enemy_castle)
-        elif fix == 1:
-            check_if_able_to_build(tgt)
-        else:
-            check_if_able_to_build(my_castle)
-
-        # choosing pointA or pointB:
-        if dir is None:
-            enemy_portals = game.get_enemy_castle()
-            dest = pointA
-            max = 0
-            if enemy_portals:
-                for point in [pointA, pointB]:
-                    for portal in enemy_portals:
-                        if point.distance(portal.location) > max:
-                            max = point.distance(portal.location)
-                            dest = point
-                return dest
-
-            else:
-                return pointA
-        elif dir == 1:
-            return pointA
-        elif dir == -1:
-            return pointB
-        else:
-            return pointA
+        my_castle = game.get_my_castle()
+        locs = []
+        while len(locs) < amount:
+            locs = self.portalutil.get_object_ring_locations(game, enemy_castle.location, enemy_castle.location.towards(
+                my_castle, radius), 100)
+            print locs, "init locs"
+            radius += radius_delta
+            if len(locs) > amount*3:
+                locs = locs[amount*3:]
+                for loc in locs:
+                    for portal in game.get_enemy_portals():
+                        if portal.distance(loc) < min_dist_efrom_enemy_portals:
+                            locs.remove(loc)
+                            break
+            print locs, "final locs"
+        return locs[-2:]
