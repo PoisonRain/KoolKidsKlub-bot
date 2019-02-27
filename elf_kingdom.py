@@ -152,7 +152,10 @@ class MapObject(BaseObject):
         return self.get_location().distance(other)
 
     def in_range(self,other,range):
-        return self.get_location().in_range(other.get_location(),range)
+        if ((self.get_location() is not None) and ((other.get_location() is not None))):
+            return self.get_location().in_range(other.get_location(),range)
+        else:
+            return False
 
     def in_map(self):
         return BaseObject._game.in_map(self)
@@ -165,8 +168,8 @@ _hx_classes[u"MapObject"] = MapObject
 
 class GameObject(MapObject):
     _hx_class_name = u"GameObject"
-    __slots__ = (u"owner", u"id", u"unique_id", u"already_acted", u"location", u"current_health", u"initial_location")
-    _hx_fields = [u"owner", u"id", u"unique_id", u"already_acted", u"location", u"current_health", u"initial_location"]
+    __slots__ = (u"owner", u"id", u"unique_id", u"already_acted", u"location", u"current_health", u"max_health", u"initial_location")
+    _hx_fields = [u"owner", u"id", u"unique_id", u"already_acted", u"location", u"current_health", u"max_health", u"initial_location"]
     _hx_methods = [u"equals", u"hashCode", u"toString", u"get_location"]
     _hx_statics = []
     _hx_interfaces = []
@@ -196,6 +199,7 @@ class GameObject(MapObject):
         _hx_o.already_acted = None
         _hx_o.location = None
         _hx_o.current_health = None
+        _hx_o.max_health = None
         _hx_o.initial_location = None
 GameObject._hx_class = GameObject
 _hx_classes[u"GameObject"] = GameObject
@@ -239,8 +243,8 @@ _hx_classes[u"Class"] = Class
 
 class Creature(GameObject):
     _hx_class_name = u"Creature"
-    __slots__ = (u"max_speed", u"attack_range", u"attack_multiplier", u"summoner", u"summoning_duration")
-    _hx_fields = [u"max_speed", u"attack_range", u"attack_multiplier", u"summoner", u"summoning_duration"]
+    __slots__ = (u"attack_range", u"attack_multiplier", u"summoner", u"summoning_duration", u"max_speed")
+    _hx_fields = [u"attack_range", u"attack_multiplier", u"summoner", u"summoning_duration", u"max_speed"]
     _hx_methods = []
     _hx_statics = []
     _hx_interfaces = []
@@ -256,11 +260,11 @@ class Creature(GameObject):
 
     @staticmethod
     def _hx_empty_init(_hx_o):
-        _hx_o.max_speed = None
         _hx_o.attack_range = None
         _hx_o.attack_multiplier = None
         _hx_o.summoner = None
         _hx_o.summoning_duration = None
+        _hx_o.max_speed = None
 Creature._hx_class = Creature
 _hx_classes[u"Creature"] = Creature
 
@@ -325,22 +329,59 @@ _hx_classes[u"EReg"] = EReg
 
 class Elf(GameObject):
     _hx_class_name = u"Elf"
-    __slots__ = (u"attack_range", u"attack_multiplier", u"max_speed", u"turns_to_revive", u"spawn_turns", u"is_building", u"currently_building")
-    _hx_fields = [u"attack_range", u"attack_multiplier", u"max_speed", u"turns_to_revive", u"spawn_turns", u"is_building", u"currently_building"]
-    _hx_methods = [u"in_attack_range", u"attack", u"move_to", u"enoughManaToBuild", u"is_alive", u"build_portal", u"can_build_portal"]
+    __slots__ = (u"attack_range", u"attack_multiplier", u"max_speed", u"is_building", u"currently_building", u"turns_to_build", u"current_spells", u"turns_to_revive", u"spawn_turns", u"invisible")
+    _hx_fields = [u"attack_range", u"attack_multiplier", u"max_speed", u"is_building", u"currently_building", u"turns_to_build", u"current_spells", u"turns_to_revive", u"spawn_turns", u"invisible"]
+    _hx_methods = [u"build_portal", u"can_build_portal", u"build_mana_fountain", u"can_build_mana_fountain", u"in_attack_range", u"attack", u"move_to", u"enoughManaToBuild", u"is_alive", u"can_cast_invisibility", u"cast_invisibility", u"can_cast_speed_up", u"cast_speed_up"]
     _hx_statics = []
     _hx_interfaces = []
     _hx_super = GameObject
 
 
     def __init__(self):
-        self.currently_building = None
-        self.is_building = None
+        self.invisible = None
         self.spawn_turns = None
         self.turns_to_revive = None
+        self.current_spells = None
+        self.turns_to_build = None
+        self.currently_building = None
+        self.is_building = None
         self.attack_multiplier = None
         self.attack_range = None
         self.max_speed = 0
+
+    def build_portal(self):
+        orderArgs = u"\"product\": \"Portal\""
+        BaseObject._game._addOrder(u"produce",self,orderArgs)
+        if self.can_build_portal():
+            _hx_local_0 = self.owner
+            _hx_local_1 = _hx_local_0.mana
+            _hx_local_0.mana = (_hx_local_1 - BaseObject._game.portal_cost)
+            _hx_local_0.mana
+            self.is_building = True
+            self.currently_building = u"Portal"
+
+    def can_build_portal(self):
+        if (self.is_alive() and self.enoughManaToBuild(BaseObject._game.portal_cost)):
+            return BaseObject._game.can_build_portal_at(self.location)
+        else:
+            return False
+
+    def build_mana_fountain(self):
+        orderArgs = u"\"product\": \"ManaFountain\""
+        BaseObject._game._addOrder(u"produce",self,orderArgs)
+        if self.can_build_mana_fountain():
+            _hx_local_0 = self.owner
+            _hx_local_1 = _hx_local_0.mana
+            _hx_local_0.mana = (_hx_local_1 - BaseObject._game.mana_fountain_cost)
+            _hx_local_0.mana
+            self.is_building = True
+            self.currently_building = u"ManaFountain"
+
+    def can_build_mana_fountain(self):
+        if (self.is_alive() and self.enoughManaToBuild(BaseObject._game.mana_fountain_cost)):
+            return BaseObject._game.can_build_mana_fountain_at(self.location)
+        else:
+            return False
 
     def in_attack_range(self,mapObject):
         size = (Reflect.field(mapObject,u"size") if (hasattr(mapObject,((u"_hx_" + u"size") if ((u"size" in python_Boot.keywords)) else ((u"_hx_" + u"size") if (((((len(u"size") > 2) and ((ord(u"size"[0]) == 95))) and ((ord(u"size"[1]) == 95))) and ((ord(u"size"[(len(u"size") - 1)]) != 95)))) else u"size")))) else (Reflect.field(mapObject,u"Size") if (hasattr(mapObject,((u"_hx_" + u"Size") if ((u"Size" in python_Boot.keywords)) else ((u"_hx_" + u"Size") if (((((len(u"Size") > 2) and ((ord(u"Size"[0]) == 95))) and ((ord(u"Size"[1]) == 95))) and ((ord(u"Size"[(len(u"Size") - 1)]) != 95)))) else u"Size")))) else 0))
@@ -358,39 +399,56 @@ class Elf(GameObject):
     def is_alive(self):
         return (self.turns_to_revive == 0)
 
-    def build_portal(self):
-        orderArgs = u"\"product\": \"Portal\""
-        BaseObject._game._addOrder(u"produce",self,orderArgs)
-        _hx_local_0 = self.owner
-        _hx_local_1 = _hx_local_0.mana
-        _hx_local_0.mana = (_hx_local_1 - BaseObject._game.portal_cost)
-        _hx_local_0.mana
-        self.is_building = True
-        self.currently_building = u"Portal"
-
-    def can_build_portal(self):
-        if (self.is_alive() and self.enoughManaToBuild(BaseObject._game.portal_cost)):
-            return BaseObject._game.can_build_portal_at(self.location)
+    def can_cast_invisibility(self):
+        if ((self.owner.mana >= BaseObject._game.invisibility_cost) and self.is_alive()):
+            return (self.currently_building is None)
         else:
             return False
+
+    def cast_invisibility(self):
+        orderArgs = u"\"spell\": \"Invisibility\""
+        BaseObject._game._addOrder(u"cast",self,orderArgs)
+        if self.can_cast_invisibility():
+            _hx_local_0 = self.owner
+            _hx_local_1 = _hx_local_0.mana
+            _hx_local_0.mana = (_hx_local_1 - BaseObject._game.invisibility_cost)
+            _hx_local_0.mana
+
+    def can_cast_speed_up(self):
+        if (self.owner.mana >= BaseObject._game.speed_up_cost):
+            return self.is_alive()
+        else:
+            return False
+
+    def cast_speed_up(self):
+        orderArgs = u"\"spell\": \"SpeedUp\""
+        BaseObject._game._addOrder(u"cast",self,orderArgs)
+        if self.can_cast_speed_up():
+            _hx_local_0 = self.owner
+            _hx_local_1 = _hx_local_0.mana
+            _hx_local_0.mana = (_hx_local_1 - BaseObject._game.speed_up_cost)
+            _hx_local_0.mana
 
     @staticmethod
     def _hx_empty_init(_hx_o):
         _hx_o.attack_range = None
         _hx_o.attack_multiplier = None
         _hx_o.max_speed = None
-        _hx_o.turns_to_revive = None
-        _hx_o.spawn_turns = None
         _hx_o.is_building = None
         _hx_o.currently_building = None
+        _hx_o.turns_to_build = None
+        _hx_o.current_spells = None
+        _hx_o.turns_to_revive = None
+        _hx_o.spawn_turns = None
+        _hx_o.invisible = None
 Elf._hx_class = Elf
 _hx_classes[u"Elf"] = Elf
 
 
 class IceTroll(Creature):
     _hx_class_name = u"IceTroll"
-    __slots__ = (u"suffocation_per_turn",)
-    _hx_fields = [u"suffocation_per_turn"]
+    __slots__ = (u"cost", u"suffocation_per_turn")
+    _hx_fields = [u"cost", u"suffocation_per_turn"]
     _hx_methods = []
     _hx_statics = []
     _hx_interfaces = []
@@ -399,19 +457,55 @@ class IceTroll(Creature):
 
     def __init__(self):
         self.suffocation_per_turn = None
+        self.cost = None
         super(IceTroll, self).__init__()
 
     @staticmethod
     def _hx_empty_init(_hx_o):
+        _hx_o.cost = None
         _hx_o.suffocation_per_turn = None
 IceTroll._hx_class = IceTroll
 _hx_classes[u"IceTroll"] = IceTroll
 
 
+class Spell(BaseObject):
+    _hx_class_name = u"Spell"
+    __slots__ = (u"expiration_turns", u"caster")
+    _hx_fields = [u"expiration_turns", u"caster"]
+    _hx_methods = [u"toString"]
+    _hx_statics = []
+    _hx_interfaces = []
+    _hx_super = BaseObject
+
+
+    def toString(self):
+        return ((((u"{" + HxOverrides.stringOrNull(self.type)) + u" , Caster: ") + Std.string(self.caster)) + u"}")
+
+    @staticmethod
+    def _hx_empty_init(_hx_o):
+        _hx_o.expiration_turns = None
+        _hx_o.caster = None
+Spell._hx_class = Spell
+_hx_classes[u"Spell"] = Spell
+
+
+class Invisibility(Spell):
+    _hx_class_name = u"Invisibility"
+    __slots__ = ()
+    _hx_fields = []
+    _hx_methods = []
+    _hx_statics = []
+    _hx_interfaces = []
+    _hx_super = Spell
+
+Invisibility._hx_class = Invisibility
+_hx_classes[u"Invisibility"] = Invisibility
+
+
 class LavaGiant(Creature):
     _hx_class_name = u"LavaGiant"
-    __slots__ = (u"suffocation_per_turn",)
-    _hx_fields = [u"suffocation_per_turn"]
+    __slots__ = (u"cost", u"suffocation_per_turn")
+    _hx_fields = [u"cost", u"suffocation_per_turn"]
     _hx_methods = []
     _hx_statics = []
     _hx_interfaces = []
@@ -420,10 +514,12 @@ class LavaGiant(Creature):
 
     def __init__(self):
         self.suffocation_per_turn = None
+        self.cost = None
         super(LavaGiant, self).__init__()
 
     @staticmethod
     def _hx_empty_init(_hx_o):
+        _hx_o.cost = None
         _hx_o.suffocation_per_turn = None
 LavaGiant._hx_class = LavaGiant
 _hx_classes[u"LavaGiant"] = LavaGiant
@@ -573,6 +669,24 @@ class Location(MapObject):
 Location._hx_class = Location
 _hx_classes[u"Location"] = Location
 
+
+class ManaFountain(Building):
+    _hx_class_name = u"ManaFountain"
+    __slots__ = (u"cost", u"mana_per_turn")
+    _hx_fields = [u"cost", u"mana_per_turn"]
+    _hx_methods = []
+    _hx_statics = []
+    _hx_interfaces = []
+    _hx_super = Building
+
+
+    @staticmethod
+    def _hx_empty_init(_hx_o):
+        _hx_o.cost = None
+        _hx_o.mana_per_turn = None
+ManaFountain._hx_class = ManaFountain
+_hx_classes[u"ManaFountain"] = ManaFountain
+
 class _ObjectParser_PromiseType(Enum):
     __slots__ = ()
     _hx_class_name = u"_ObjectParser.PromiseType"
@@ -609,10 +723,44 @@ _hx_classes[u"_ObjectParser.Promise"] = _ObjectParser_Promise
 class ObjectParser(object):
     _hx_class_name = u"ObjectParser"
     __slots__ = ()
-    _hx_statics = [u"__loadVectorOfBaseObjects_Creature", u"__loadVectorOfBaseObjects_Location", u"__loadVectorOfBaseObjects_Building", u"__loadVectorOfBaseObjects_IceTroll", u"__loadVectorOfBaseObjects_LavaGiant", u"__loadVectorOfBaseObjects_Portal", u"__loadVectorOfBaseObjects_Castle", u"__loadVectorOfBaseObjects_Elf", u"__loadVectorOfBaseObjects_Player", u"__loadVectorOfBaseObjects_PirateGame", u"__loadVectorOfBaseObjects_MapObject", u"__loadVectorOfBaseObjects_GameObject", u"__loadVectorOfBaseObjects_BaseObject", u"__loadVectorOfBaseObjects_ObjectParser", u"__loadVectorOfBaseObjects_Api", u"__loadVectorBuiltins_Bool", u"__loadVectorBuiltins_String", u"__loadVectorBuiltins_Int", u"__submittedObjects", u"__submittedTemporaryObjects", u"__objectsWaitList", u"__currentNamespace", u"_nativeAPI", u"_parseTurn", u"__submitObject", u"__updateObjects", u"__loadObject", u"__loadFields", u"__loadVectorOfUnknownType", u"__addPromise", u"__fulfilPromise", u"__createEmptyInstance", u"__getField", u"__setField"]
+    _hx_statics = [u"__loadVectorOfBaseObjects_SpeedUp", u"__loadVectorOfBaseObjects_Invisibility", u"__loadVectorOfBaseObjects_Spell", u"__loadVectorOfBaseObjects_Location", u"__loadVectorOfBaseObjects_Building", u"__loadVectorOfBaseObjects_ManaFountain", u"__loadVectorOfBaseObjects_Portal", u"__loadVectorOfBaseObjects_Castle", u"__loadVectorOfBaseObjects_Elf", u"__loadVectorOfBaseObjects_LavaGiant", u"__loadVectorOfBaseObjects_IceTroll", u"__loadVectorOfBaseObjects_Creature", u"__loadVectorOfBaseObjects_MapObject", u"__loadVectorOfBaseObjects_GameObject", u"__loadVectorOfBaseObjects_PirateGame", u"__loadVectorOfBaseObjects_Player", u"__loadVectorOfBaseObjects_BaseObject", u"__loadVectorOfBaseObjects_ObjectParser", u"__loadVectorOfBaseObjects_Api", u"__loadVectorBuiltins_Bool", u"__loadVectorBuiltins_String", u"__loadVectorBuiltins_Int", u"__submittedObjects", u"__submittedTemporaryObjects", u"__objectsWaitList", u"__currentNamespace", u"_nativeAPI", u"_parseTurn", u"__submitObject", u"__updateObjects", u"__loadObject", u"__loadFields", u"__loadVectorOfUnknownType", u"__addPromise", u"__fulfilPromise", u"__createEmptyInstance", u"__getField", u"__setField"]
 
     @staticmethod
-    def _hx___loadVectorOfBaseObjects_Creature(args,ignored):
+    def _hx___loadVectorOfBaseObjects_SpeedUp(args,ignored):
+        instanceField = (None if ((len(args) == 0)) else args.pop())
+        initValueArray = (None if ((len(args) == 0)) else args.pop())
+        object = (None if ((len(args) == 0)) else args.pop())
+        this1 = [None]*len(initValueArray)
+        newInitValue = this1
+        ObjectParser._nativeAPI.setField(object,instanceField,newInitValue)
+        _g1 = 0
+        _g = len(initValueArray)
+        while (_g1 < _g):
+            index = _g1
+            _g1 = (_g1 + 1)
+            value = initValueArray[index]
+            otherObjectId = value.get(u"object_id")
+            ObjectParser._hx___addPromise(otherObjectId,_ObjectParser_Promise(object,_ObjectParser_PromiseType.Update(newInitValue,index)))
+
+    @staticmethod
+    def _hx___loadVectorOfBaseObjects_Invisibility(args,ignored):
+        instanceField = (None if ((len(args) == 0)) else args.pop())
+        initValueArray = (None if ((len(args) == 0)) else args.pop())
+        object = (None if ((len(args) == 0)) else args.pop())
+        this1 = [None]*len(initValueArray)
+        newInitValue = this1
+        ObjectParser._nativeAPI.setField(object,instanceField,newInitValue)
+        _g1 = 0
+        _g = len(initValueArray)
+        while (_g1 < _g):
+            index = _g1
+            _g1 = (_g1 + 1)
+            value = initValueArray[index]
+            otherObjectId = value.get(u"object_id")
+            ObjectParser._hx___addPromise(otherObjectId,_ObjectParser_Promise(object,_ObjectParser_PromiseType.Update(newInitValue,index)))
+
+    @staticmethod
+    def _hx___loadVectorOfBaseObjects_Spell(args,ignored):
         instanceField = (None if ((len(args) == 0)) else args.pop())
         initValueArray = (None if ((len(args) == 0)) else args.pop())
         object = (None if ((len(args) == 0)) else args.pop())
@@ -663,24 +811,7 @@ class ObjectParser(object):
             ObjectParser._hx___addPromise(otherObjectId,_ObjectParser_Promise(object,_ObjectParser_PromiseType.Update(newInitValue,index)))
 
     @staticmethod
-    def _hx___loadVectorOfBaseObjects_IceTroll(args,ignored):
-        instanceField = (None if ((len(args) == 0)) else args.pop())
-        initValueArray = (None if ((len(args) == 0)) else args.pop())
-        object = (None if ((len(args) == 0)) else args.pop())
-        this1 = [None]*len(initValueArray)
-        newInitValue = this1
-        ObjectParser._nativeAPI.setField(object,instanceField,newInitValue)
-        _g1 = 0
-        _g = len(initValueArray)
-        while (_g1 < _g):
-            index = _g1
-            _g1 = (_g1 + 1)
-            value = initValueArray[index]
-            otherObjectId = value.get(u"object_id")
-            ObjectParser._hx___addPromise(otherObjectId,_ObjectParser_Promise(object,_ObjectParser_PromiseType.Update(newInitValue,index)))
-
-    @staticmethod
-    def _hx___loadVectorOfBaseObjects_LavaGiant(args,ignored):
+    def _hx___loadVectorOfBaseObjects_ManaFountain(args,ignored):
         instanceField = (None if ((len(args) == 0)) else args.pop())
         initValueArray = (None if ((len(args) == 0)) else args.pop())
         object = (None if ((len(args) == 0)) else args.pop())
@@ -748,7 +879,7 @@ class ObjectParser(object):
             ObjectParser._hx___addPromise(otherObjectId,_ObjectParser_Promise(object,_ObjectParser_PromiseType.Update(newInitValue,index)))
 
     @staticmethod
-    def _hx___loadVectorOfBaseObjects_Player(args,ignored):
+    def _hx___loadVectorOfBaseObjects_LavaGiant(args,ignored):
         instanceField = (None if ((len(args) == 0)) else args.pop())
         initValueArray = (None if ((len(args) == 0)) else args.pop())
         object = (None if ((len(args) == 0)) else args.pop())
@@ -765,7 +896,24 @@ class ObjectParser(object):
             ObjectParser._hx___addPromise(otherObjectId,_ObjectParser_Promise(object,_ObjectParser_PromiseType.Update(newInitValue,index)))
 
     @staticmethod
-    def _hx___loadVectorOfBaseObjects_PirateGame(args,ignored):
+    def _hx___loadVectorOfBaseObjects_IceTroll(args,ignored):
+        instanceField = (None if ((len(args) == 0)) else args.pop())
+        initValueArray = (None if ((len(args) == 0)) else args.pop())
+        object = (None if ((len(args) == 0)) else args.pop())
+        this1 = [None]*len(initValueArray)
+        newInitValue = this1
+        ObjectParser._nativeAPI.setField(object,instanceField,newInitValue)
+        _g1 = 0
+        _g = len(initValueArray)
+        while (_g1 < _g):
+            index = _g1
+            _g1 = (_g1 + 1)
+            value = initValueArray[index]
+            otherObjectId = value.get(u"object_id")
+            ObjectParser._hx___addPromise(otherObjectId,_ObjectParser_Promise(object,_ObjectParser_PromiseType.Update(newInitValue,index)))
+
+    @staticmethod
+    def _hx___loadVectorOfBaseObjects_Creature(args,ignored):
         instanceField = (None if ((len(args) == 0)) else args.pop())
         initValueArray = (None if ((len(args) == 0)) else args.pop())
         object = (None if ((len(args) == 0)) else args.pop())
@@ -800,6 +948,40 @@ class ObjectParser(object):
 
     @staticmethod
     def _hx___loadVectorOfBaseObjects_GameObject(args,ignored):
+        instanceField = (None if ((len(args) == 0)) else args.pop())
+        initValueArray = (None if ((len(args) == 0)) else args.pop())
+        object = (None if ((len(args) == 0)) else args.pop())
+        this1 = [None]*len(initValueArray)
+        newInitValue = this1
+        ObjectParser._nativeAPI.setField(object,instanceField,newInitValue)
+        _g1 = 0
+        _g = len(initValueArray)
+        while (_g1 < _g):
+            index = _g1
+            _g1 = (_g1 + 1)
+            value = initValueArray[index]
+            otherObjectId = value.get(u"object_id")
+            ObjectParser._hx___addPromise(otherObjectId,_ObjectParser_Promise(object,_ObjectParser_PromiseType.Update(newInitValue,index)))
+
+    @staticmethod
+    def _hx___loadVectorOfBaseObjects_PirateGame(args,ignored):
+        instanceField = (None if ((len(args) == 0)) else args.pop())
+        initValueArray = (None if ((len(args) == 0)) else args.pop())
+        object = (None if ((len(args) == 0)) else args.pop())
+        this1 = [None]*len(initValueArray)
+        newInitValue = this1
+        ObjectParser._nativeAPI.setField(object,instanceField,newInitValue)
+        _g1 = 0
+        _g = len(initValueArray)
+        while (_g1 < _g):
+            index = _g1
+            _g1 = (_g1 + 1)
+            value = initValueArray[index]
+            otherObjectId = value.get(u"object_id")
+            ObjectParser._hx___addPromise(otherObjectId,_ObjectParser_Promise(object,_ObjectParser_PromiseType.Update(newInitValue,index)))
+
+    @staticmethod
+    def _hx___loadVectorOfBaseObjects_Player(args,ignored):
         instanceField = (None if ((len(args) == 0)) else args.pop())
         initValueArray = (None if ((len(args) == 0)) else args.pop())
         object = (None if ((len(args) == 0)) else args.pop())
@@ -1009,30 +1191,38 @@ class ObjectParser(object):
             ObjectParser._hx___loadVectorOfBaseObjects_ObjectParser(args,None)
         elif (listType == u"BaseObject"):
             ObjectParser._hx___loadVectorOfBaseObjects_BaseObject(args,None)
+        elif (listType == u"Player"):
+            ObjectParser._hx___loadVectorOfBaseObjects_Player(args,None)
+        elif (listType == u"PirateGame"):
+            ObjectParser._hx___loadVectorOfBaseObjects_PirateGame(args,None)
         elif (listType == u"GameObject"):
             ObjectParser._hx___loadVectorOfBaseObjects_GameObject(args,None)
         elif (listType == u"MapObject"):
             ObjectParser._hx___loadVectorOfBaseObjects_MapObject(args,None)
-        elif (listType == u"PirateGame"):
-            ObjectParser._hx___loadVectorOfBaseObjects_PirateGame(args,None)
-        elif (listType == u"Player"):
-            ObjectParser._hx___loadVectorOfBaseObjects_Player(args,None)
+        elif (listType == u"Creature"):
+            ObjectParser._hx___loadVectorOfBaseObjects_Creature(args,None)
+        elif (listType == u"IceTroll"):
+            ObjectParser._hx___loadVectorOfBaseObjects_IceTroll(args,None)
+        elif (listType == u"LavaGiant"):
+            ObjectParser._hx___loadVectorOfBaseObjects_LavaGiant(args,None)
         elif (listType == u"Elf"):
             ObjectParser._hx___loadVectorOfBaseObjects_Elf(args,None)
         elif (listType == u"Castle"):
             ObjectParser._hx___loadVectorOfBaseObjects_Castle(args,None)
         elif (listType == u"Portal"):
             ObjectParser._hx___loadVectorOfBaseObjects_Portal(args,None)
-        elif (listType == u"LavaGiant"):
-            ObjectParser._hx___loadVectorOfBaseObjects_LavaGiant(args,None)
-        elif (listType == u"IceTroll"):
-            ObjectParser._hx___loadVectorOfBaseObjects_IceTroll(args,None)
+        elif (listType == u"ManaFountain"):
+            ObjectParser._hx___loadVectorOfBaseObjects_ManaFountain(args,None)
         elif (listType == u"Building"):
             ObjectParser._hx___loadVectorOfBaseObjects_Building(args,None)
         elif (listType == u"Location"):
             ObjectParser._hx___loadVectorOfBaseObjects_Location(args,None)
-        elif (listType == u"Creature"):
-            ObjectParser._hx___loadVectorOfBaseObjects_Creature(args,None)
+        elif (listType == u"Spell"):
+            ObjectParser._hx___loadVectorOfBaseObjects_Spell(args,None)
+        elif (listType == u"Invisibility"):
+            ObjectParser._hx___loadVectorOfBaseObjects_Invisibility(args,None)
+        elif (listType == u"SpeedUp"):
+            ObjectParser._hx___loadVectorOfBaseObjects_SpeedUp(args,None)
 
     @staticmethod
     def _hx___addPromise(objectId,promise):
@@ -1084,25 +1274,35 @@ _hx_classes[u"ObjectParser"] = ObjectParser
 
 class Game(BaseObject):
     _hx_class_name = u"Game"
-    __slots__ = (u"_hx___players", u"_hx___turnTime", u"_hx___turnStartTime", u"_hx___numPlayers", u"_hx___recoverErrors", u"_runnerFullStacktrace", u"max_points", u"max_turns", u"turn", u"_hx___me", u"_hx___enemies", u"_hx___orders", u"_hx___nativeAPI", u"_hx___orderLines", u"ice_troll_attack_range", u"ice_troll_attack_multiplier", u"lava_giant_attack_range", u"lava_giant_attack_multiplier", u"elf_attack_range", u"elf_attack_multiplier", u"elf_max_health", u"portal_max_health", u"lava_giant_max_health", u"ice_troll_max_health", u"castle_max_health", u"castle_size", u"portal_size", u"lava_giant_max_speed", u"ice_troll_max_speed", u"elf_max_speed", u"lava_giant_suffocation_per_turn", u"ice_troll_suffocation_per_turn", u"_hx___buildings", u"default_mana_per_turn", u"_hx___castles", u"rows", u"cols", u"elf_spawn_turns", u"_hx___portal", u"portal_cost", u"lava_giant_cost", u"ice_troll_cost", u"portal_building_duration", u"ice_troll_summoning_duration", u"lava_giant_summoning_duration")
-    _hx_fields = [u"__players", u"__turnTime", u"__turnStartTime", u"__numPlayers", u"__recoverErrors", u"_runnerFullStacktrace", u"max_points", u"max_turns", u"turn", u"__me", u"__enemies", u"__orders", u"__nativeAPI", u"__orderLines", u"ice_troll_attack_range", u"ice_troll_attack_multiplier", u"lava_giant_attack_range", u"lava_giant_attack_multiplier", u"elf_attack_range", u"elf_attack_multiplier", u"elf_max_health", u"portal_max_health", u"lava_giant_max_health", u"ice_troll_max_health", u"castle_max_health", u"castle_size", u"portal_size", u"lava_giant_max_speed", u"ice_troll_max_speed", u"elf_max_speed", u"lava_giant_suffocation_per_turn", u"ice_troll_suffocation_per_turn", u"__buildings", u"default_mana_per_turn", u"__castles", u"rows", u"cols", u"elf_spawn_turns", u"__portal", u"portal_cost", u"lava_giant_cost", u"ice_troll_cost", u"portal_building_duration", u"ice_troll_summoning_duration", u"lava_giant_summoning_duration"]
-    _hx_methods = [u"__printIgnoredOrders", u"_nextTurn", u"_shouldRecoverErrors", u"isFilePosInBot", u"_addOrder", u"_addMoveOrder", u"_getActions", u"debug", u"get_myself", u"get_enemy", u"get_all_players", u"get_time_remaining", u"get_max_turn_time", u"get_all_buildings", u"canBuildInLocation", u"get_my_mana", u"get_enemy_mana", u"get_all_castles", u"get_my_castle", u"get_enemy_castle", u"in_map", u"get_my_lava_giants", u"get_my_creatures", u"get_enemy_creatures", u"get_my_ice_trolls", u"get_enemy_lava_giants", u"get_enemy_ice_trolls", u"get_all_living_elves", u"get_all_elves", u"get_my_living_elves", u"get_all_my_elves", u"get_enemy_living_elves", u"get_all_enemy_elves", u"_moveOrder", u"get_all_portals", u"get_my_portals", u"get_enemy_portals", u"can_build_portal_at"]
-    _hx_statics = [u"__getObjectsOfOtherPlayers_Portal", u"__getObjectsOfPlayer_Portal", u"__getObjectsOfOtherPlayers_Castle", u"__getObjectsOfPlayer_Castle"]
+    __slots__ = (u"_hx___players", u"_hx___turnTime", u"_hx___turnStartTime", u"_hx___numPlayers", u"_hx___recoverErrors", u"_runnerFullStacktrace", u"max_points", u"max_turns", u"turn", u"_hx___me", u"_hx___enemies", u"_hx___orders", u"_hx___nativeAPI", u"_hx___orderLines", u"ice_troll_attack_range", u"ice_troll_attack_multiplier", u"lava_giant_attack_range", u"lava_giant_attack_multiplier", u"elf_attack_range", u"elf_attack_multiplier", u"lava_giant_max_health", u"ice_troll_max_health", u"castle_max_health", u"mana_fountain_max_health", u"elf_max_health", u"portal_max_health", u"castle_size", u"portal_size", u"mana_fountain_size", u"lava_giant_max_speed", u"ice_troll_max_speed", u"elf_max_speed", u"lava_giant_cost", u"lava_giant_summoning_duration", u"ice_troll_cost", u"ice_troll_summoning_duration", u"portal_cost", u"portal_building_duration", u"mana_fountain_cost", u"mana_fountain_building_duration", u"speed_up_cost", u"speed_up_expiration_turns", u"invisibility_cost", u"invisibility_expiration_turns", u"lava_giant_suffocation_per_turn", u"ice_troll_suffocation_per_turn", u"_hx___buildings", u"default_mana_per_turn", u"_hx___castles", u"rows", u"cols", u"elf_spawn_turns", u"_hx___portals", u"speed_up_multiplier", u"_hx___manaFountains", u"mana_fountain_mana_per_turn")
+    _hx_fields = [u"__players", u"__turnTime", u"__turnStartTime", u"__numPlayers", u"__recoverErrors", u"_runnerFullStacktrace", u"max_points", u"max_turns", u"turn", u"__me", u"__enemies", u"__orders", u"__nativeAPI", u"__orderLines", u"ice_troll_attack_range", u"ice_troll_attack_multiplier", u"lava_giant_attack_range", u"lava_giant_attack_multiplier", u"elf_attack_range", u"elf_attack_multiplier", u"lava_giant_max_health", u"ice_troll_max_health", u"castle_max_health", u"mana_fountain_max_health", u"elf_max_health", u"portal_max_health", u"castle_size", u"portal_size", u"mana_fountain_size", u"lava_giant_max_speed", u"ice_troll_max_speed", u"elf_max_speed", u"lava_giant_cost", u"lava_giant_summoning_duration", u"ice_troll_cost", u"ice_troll_summoning_duration", u"portal_cost", u"portal_building_duration", u"mana_fountain_cost", u"mana_fountain_building_duration", u"speed_up_cost", u"speed_up_expiration_turns", u"invisibility_cost", u"invisibility_expiration_turns", u"lava_giant_suffocation_per_turn", u"ice_troll_suffocation_per_turn", u"__buildings", u"default_mana_per_turn", u"__castles", u"rows", u"cols", u"elf_spawn_turns", u"__portals", u"speed_up_multiplier", u"__manaFountains", u"mana_fountain_mana_per_turn"]
+    _hx_methods = [u"__printIgnoredOrders", u"_nextTurn", u"_shouldRecoverErrors", u"isFilePosInBot", u"_addOrder", u"_addMoveOrder", u"_getActions", u"debug", u"get_myself", u"get_enemy", u"get_all_players", u"get_time_remaining", u"get_max_turn_time", u"can_build_portal_at", u"can_build_mana_fountain_at", u"get_all_buildings", u"canBuildInLocation", u"get_my_mana", u"get_enemy_mana", u"get_all_castles", u"get_my_castle", u"get_enemy_castle", u"in_map", u"get_all_living_elves", u"get_all_elves", u"get_my_living_elves", u"get_all_my_elves", u"get_enemy_living_elves", u"get_all_enemy_elves", u"get_all_portals", u"get_my_portals", u"get_enemy_portals", u"_moveOrder", u"get_my_creatures", u"get_enemy_creatures", u"get_all_mana_fountains", u"get_my_mana_fountains", u"get_enemy_mana_fountains", u"get_my_ice_trolls", u"get_enemy_ice_trolls", u"get_my_lava_giants", u"get_enemy_lava_giants"]
+    _hx_statics = [u"__getObjectsOfOtherPlayers_ManaFountain", u"__getObjectsOfPlayer_ManaFountain", u"__getObjectsOfOtherPlayers_Portal", u"__getObjectsOfPlayer_Portal", u"__getObjectsOfOtherPlayers_Castle", u"__getObjectsOfPlayer_Castle"]
     _hx_interfaces = []
     _hx_super = BaseObject
 
 
     def __init__(self,nativeAPI):
-        self.lava_giant_summoning_duration = None
-        self.ice_troll_summoning_duration = None
-        self.portal_building_duration = None
-        self.ice_troll_cost = None
-        self.lava_giant_cost = None
-        self.portal_cost = None
-        self._hx___portal = None
+        self.mana_fountain_mana_per_turn = None
+        self._hx___manaFountains = None
+        self.speed_up_multiplier = None
+        self._hx___portals = None
         self._hx___castles = None
         self.default_mana_per_turn = None
         self._hx___buildings = None
+        self.invisibility_expiration_turns = None
+        self.invisibility_cost = None
+        self.speed_up_expiration_turns = None
+        self.speed_up_cost = None
+        self.mana_fountain_building_duration = None
+        self.mana_fountain_cost = None
+        self.portal_building_duration = None
+        self.portal_cost = None
+        self.ice_troll_summoning_duration = None
+        self.ice_troll_cost = None
+        self.lava_giant_summoning_duration = None
+        self.lava_giant_cost = None
+        self.mana_fountain_size = None
         self.portal_size = None
         self.castle_size = None
         self.elf_attack_multiplier = None
@@ -1122,11 +1322,12 @@ class Game(BaseObject):
         self.elf_max_speed = 0
         self.ice_troll_max_speed = 0
         self.lava_giant_max_speed = 0
+        self.portal_max_health = 0
+        self.elf_max_health = 0
+        self.mana_fountain_max_health = 0
         self.castle_max_health = 0
         self.ice_troll_max_health = 0
         self.lava_giant_max_health = 0
-        self.portal_max_health = 0
-        self.elf_max_health = 0
         self._hx___orderLines = haxe_ds_ObjectMap()
         self._hx___orders = list()
         self.turn = 0
@@ -1154,7 +1355,7 @@ class Game(BaseObject):
                     data = (dataArray[_g] if _g >= 0 and _g < len(dataArray) else None)
                     _g = (_g + 1)
                     stringData = ((u"null" if stringData is None else stringData) + HxOverrides.stringOrNull(((((u"\nfile : " + HxOverrides.stringOrNull(data.file)) + u" line : ") + Std.string(data.line)))))
-                self._hx___nativeAPI.writeLine((((u"All orders of " + Std.string(obj1)) + u" are ignored because acted multiple times.Acted at : ") + (u"null" if stringData is None else stringData)))
+                self._hx___nativeAPI.writeLine((((u"All orders of " + Std.string(obj1)) + u" are ignored \nbecause it acted multiple times.\nActed at : ") + (u"null" if stringData is None else stringData)))
 
     def _nextTurn(self,objectsData):
         self._hx___turnStartTime = self._hx___nativeAPI.getCurrentTime()
@@ -1229,6 +1430,12 @@ class Game(BaseObject):
     def get_max_turn_time(self):
         return self._hx___turnTime
 
+    def can_build_portal_at(self,location):
+        return self.canBuildInLocation(BaseObject._game.portal_size,location)
+
+    def can_build_mana_fountain_at(self,location):
+        return self.canBuildInLocation(BaseObject._game.mana_fountain_size,location)
+
     def get_all_buildings(self):
         this1 = self._hx___buildings
         this2 = [None]*len(this1)
@@ -1246,6 +1453,8 @@ class Game(BaseObject):
             _g = (_g + 1)
             if location.in_range(building,(newBuildingSize + building.size)):
                 return False
+        if (((((location.col - newBuildingSize) < 0) or (((location.col + newBuildingSize) > self.cols))) or (((location.row - newBuildingSize) < 0))) or (((location.row + newBuildingSize) > self.rows))):
+            return False
         _g2 = 0
         _g11 = BaseObject._game.get_all_living_elves()
         while (_g2 < len(_g11)):
@@ -1255,6 +1464,8 @@ class Game(BaseObject):
                 territoryRange = 0
                 if (elf.currently_building == u"Portal"):
                     territoryRange = BaseObject._game.portal_size
+                elif (elf.currently_building == u"ManaFountain"):
+                    territoryRange = BaseObject._game.mana_fountain_size
                 if location.in_range(elf,(territoryRange + newBuildingSize)):
                     return False
         return True
@@ -1293,120 +1504,6 @@ class Game(BaseObject):
                 return False
         else:
             return False
-
-    def get_my_lava_giants(self):
-        creatures = list()
-        _g = 0
-        _g1 = self._hx___me.creatures
-        while (_g < len(_g1)):
-            obj = _g1[_g]
-            _g = (_g + 1)
-            if Std._hx_is(obj,LavaGiant):
-                def _hx_local_0():
-                    _hx_local_1 = obj
-                    if Std._hx_is(_hx_local_1,LavaGiant):
-                        _hx_local_1
-                    else:
-                        raise _HxException(u"Class cast error")
-                    return _hx_local_1
-                creatures.append(_hx_local_0())
-        return list(creatures)
-
-    def get_my_creatures(self):
-        ret = list()
-        _g = 0
-        _g1 = self.get_my_lava_giants()
-        while (_g < len(_g1)):
-            elem = _g1[_g]
-            _g = (_g + 1)
-            ret.append(elem)
-        _g2 = 0
-        _g11 = self.get_my_ice_trolls()
-        while (_g2 < len(_g11)):
-            elem1 = _g11[_g2]
-            _g2 = (_g2 + 1)
-            ret.append(elem1)
-        return list(ret)
-
-    def get_enemy_creatures(self):
-        ret = list()
-        _g = 0
-        _g1 = self.get_enemy_lava_giants()
-        while (_g < len(_g1)):
-            elem = _g1[_g]
-            _g = (_g + 1)
-            ret.append(elem)
-        _g2 = 0
-        _g11 = self.get_enemy_ice_trolls()
-        while (_g2 < len(_g11)):
-            elem1 = _g11[_g2]
-            _g2 = (_g2 + 1)
-            ret.append(elem1)
-        return list(ret)
-
-    def get_my_ice_trolls(self):
-        creatures = list()
-        _g = 0
-        _g1 = self._hx___me.creatures
-        while (_g < len(_g1)):
-            obj = _g1[_g]
-            _g = (_g + 1)
-            if Std._hx_is(obj,IceTroll):
-                def _hx_local_0():
-                    _hx_local_1 = obj
-                    if Std._hx_is(_hx_local_1,IceTroll):
-                        _hx_local_1
-                    else:
-                        raise _HxException(u"Class cast error")
-                    return _hx_local_1
-                creatures.append(_hx_local_0())
-        return list(creatures)
-
-    def get_enemy_lava_giants(self):
-        creatures = list()
-        _g = 0
-        _g1 = self._hx___enemies
-        while (_g < len(_g1)):
-            enemy_player = _g1[_g]
-            _g = (_g + 1)
-            _g2 = 0
-            _g3 = enemy_player.creatures
-            while (_g2 < len(_g3)):
-                obj = _g3[_g2]
-                _g2 = (_g2 + 1)
-                if Std._hx_is(obj,LavaGiant):
-                    def _hx_local_0():
-                        _hx_local_2 = obj
-                        if Std._hx_is(_hx_local_2,LavaGiant):
-                            _hx_local_2
-                        else:
-                            raise _HxException(u"Class cast error")
-                        return _hx_local_2
-                    creatures.append(_hx_local_0())
-        return list(creatures)
-
-    def get_enemy_ice_trolls(self):
-        creatures = list()
-        _g = 0
-        _g1 = self._hx___enemies
-        while (_g < len(_g1)):
-            enemy_player = _g1[_g]
-            _g = (_g + 1)
-            _g2 = 0
-            _g3 = enemy_player.creatures
-            while (_g2 < len(_g3)):
-                obj = _g3[_g2]
-                _g2 = (_g2 + 1)
-                if Std._hx_is(obj,IceTroll):
-                    def _hx_local_0():
-                        _hx_local_2 = obj
-                        if Std._hx_is(_hx_local_2,IceTroll):
-                            _hx_local_2
-                        else:
-                            raise _HxException(u"Class cast error")
-                        return _hx_local_2
-                    creatures.append(_hx_local_0())
-        return list(creatures)
 
     def get_all_living_elves(self):
         elves = list()
@@ -1484,24 +1581,98 @@ class Game(BaseObject):
                 elves.append(obj)
         return list(elves)
 
-    def _moveOrder(self,mover,destination):
-        BaseObject._game._addMoveOrder(u"vectoric_per_actor_move",mover,destination)
-
     def get_all_portals(self):
-        this1 = self._hx___portal
+        this1 = self._hx___portals
         this2 = [None]*len(this1)
         r = this2
         haxe_ds__Vector_Vector_Impl_.blit(this1,0,r,0,len(this1))
         return r
 
     def get_my_portals(self):
-        return Game._hx___getObjectsOfPlayer_Portal(self._hx___portal,self._hx___me)
+        return Game._hx___getObjectsOfPlayer_Portal(self._hx___portals,self._hx___me)
 
     def get_enemy_portals(self):
-        return Game._hx___getObjectsOfOtherPlayers_Portal(self._hx___portal,self._hx___me)
+        return Game._hx___getObjectsOfOtherPlayers_Portal(self._hx___portals,self._hx___me)
 
-    def can_build_portal_at(self,location):
-        return self.canBuildInLocation(BaseObject._game.portal_size,location)
+    def _moveOrder(self,mover,destination):
+        BaseObject._game._addMoveOrder(u"vectoric_per_actor_move",mover,destination)
+
+    def get_my_creatures(self):
+        this1 = self._hx___me.creatures
+        this2 = [None]*len(this1)
+        r = this2
+        haxe_ds__Vector_Vector_Impl_.blit(this1,0,r,0,len(this1))
+        return r
+
+    def get_enemy_creatures(self):
+        this1 = self._hx___enemies[0].creatures
+        this2 = [None]*len(this1)
+        r = this2
+        haxe_ds__Vector_Vector_Impl_.blit(this1,0,r,0,len(this1))
+        return r
+
+    def get_all_mana_fountains(self):
+        this1 = self._hx___manaFountains
+        this2 = [None]*len(this1)
+        r = this2
+        haxe_ds__Vector_Vector_Impl_.blit(this1,0,r,0,len(this1))
+        return r
+
+    def get_my_mana_fountains(self):
+        return Game._hx___getObjectsOfPlayer_ManaFountain(self._hx___manaFountains,self._hx___me)
+
+    def get_enemy_mana_fountains(self):
+        return Game._hx___getObjectsOfOtherPlayers_ManaFountain(self._hx___manaFountains,self._hx___me)
+
+    def get_my_ice_trolls(self):
+        this1 = self._hx___me.ice_trolls
+        this2 = [None]*len(this1)
+        r = this2
+        haxe_ds__Vector_Vector_Impl_.blit(this1,0,r,0,len(this1))
+        return r
+
+    def get_enemy_ice_trolls(self):
+        this1 = self._hx___enemies[0].ice_trolls
+        this2 = [None]*len(this1)
+        r = this2
+        haxe_ds__Vector_Vector_Impl_.blit(this1,0,r,0,len(this1))
+        return r
+
+    def get_my_lava_giants(self):
+        this1 = self._hx___me.lava_giants
+        this2 = [None]*len(this1)
+        r = this2
+        haxe_ds__Vector_Vector_Impl_.blit(this1,0,r,0,len(this1))
+        return r
+
+    def get_enemy_lava_giants(self):
+        this1 = self._hx___enemies[0].lava_giants
+        this2 = [None]*len(this1)
+        r = this2
+        haxe_ds__Vector_Vector_Impl_.blit(this1,0,r,0,len(this1))
+        return r
+
+    @staticmethod
+    def _hx___getObjectsOfOtherPlayers_ManaFountain(objects,player):
+        results = list()
+        _g = 0
+        while (_g < len(objects)):
+            object = objects[_g]
+            _g = (_g + 1)
+            if (object.owner != player):
+                results.append(object)
+        return list(results)
+
+    @staticmethod
+    def _hx___getObjectsOfPlayer_ManaFountain(objects,player):
+        results = list()
+        _g = 0
+        while (_g < len(objects)):
+            object = objects[_g]
+            _g = (_g + 1)
+            if (object.owner == player):
+                results.append(object)
+        return list(results)
 
     @staticmethod
     def _hx___getObjectsOfOtherPlayers_Portal(objects,player):
@@ -1569,16 +1740,30 @@ class Game(BaseObject):
         _hx_o.lava_giant_attack_multiplier = None
         _hx_o.elf_attack_range = None
         _hx_o.elf_attack_multiplier = None
-        _hx_o.elf_max_health = None
-        _hx_o.portal_max_health = None
         _hx_o.lava_giant_max_health = None
         _hx_o.ice_troll_max_health = None
         _hx_o.castle_max_health = None
+        _hx_o.mana_fountain_max_health = None
+        _hx_o.elf_max_health = None
+        _hx_o.portal_max_health = None
         _hx_o.castle_size = None
         _hx_o.portal_size = None
+        _hx_o.mana_fountain_size = None
         _hx_o.lava_giant_max_speed = None
         _hx_o.ice_troll_max_speed = None
         _hx_o.elf_max_speed = None
+        _hx_o.lava_giant_cost = None
+        _hx_o.lava_giant_summoning_duration = None
+        _hx_o.ice_troll_cost = None
+        _hx_o.ice_troll_summoning_duration = None
+        _hx_o.portal_cost = None
+        _hx_o.portal_building_duration = None
+        _hx_o.mana_fountain_cost = None
+        _hx_o.mana_fountain_building_duration = None
+        _hx_o.speed_up_cost = None
+        _hx_o.speed_up_expiration_turns = None
+        _hx_o.invisibility_cost = None
+        _hx_o.invisibility_expiration_turns = None
         _hx_o.lava_giant_suffocation_per_turn = None
         _hx_o.ice_troll_suffocation_per_turn = None
         _hx_o._hx___buildings = None
@@ -1587,21 +1772,18 @@ class Game(BaseObject):
         _hx_o.rows = None
         _hx_o.cols = None
         _hx_o.elf_spawn_turns = None
-        _hx_o._hx___portal = None
-        _hx_o.portal_cost = None
-        _hx_o.lava_giant_cost = None
-        _hx_o.ice_troll_cost = None
-        _hx_o.portal_building_duration = None
-        _hx_o.ice_troll_summoning_duration = None
-        _hx_o.lava_giant_summoning_duration = None
+        _hx_o._hx___portals = None
+        _hx_o.speed_up_multiplier = None
+        _hx_o._hx___manaFountains = None
+        _hx_o.mana_fountain_mana_per_turn = None
 Game._hx_class = Game
 _hx_classes[u"Game"] = Game
 
 
 class Player(BaseObject):
     _hx_class_name = u"Player"
-    __slots__ = (u"id", u"score", u"mana", u"mana_per_turn", u"creatures", u"lava_giants", u"ice_trolls", u"all_elves", u"living_elves")
-    _hx_fields = [u"id", u"score", u"mana", u"mana_per_turn", u"creatures", u"lava_giants", u"ice_trolls", u"all_elves", u"living_elves"]
+    __slots__ = (u"id", u"score", u"mana", u"mana_per_turn", u"all_elves", u"living_elves", u"creatures", u"ice_trolls", u"lava_giants")
+    _hx_fields = [u"id", u"score", u"mana", u"mana_per_turn", u"all_elves", u"living_elves", u"creatures", u"ice_trolls", u"lava_giants"]
     _hx_methods = [u"equals", u"hashCode", u"toString"]
     _hx_statics = []
     _hx_interfaces = []
@@ -1626,30 +1808,35 @@ class Player(BaseObject):
         _hx_o.score = None
         _hx_o.mana = None
         _hx_o.mana_per_turn = None
-        _hx_o.creatures = None
-        _hx_o.lava_giants = None
-        _hx_o.ice_trolls = None
         _hx_o.all_elves = None
         _hx_o.living_elves = None
+        _hx_o.creatures = None
+        _hx_o.ice_trolls = None
+        _hx_o.lava_giants = None
 Player._hx_class = Player
 _hx_classes[u"Player"] = Player
 
 
 class Portal(Building):
     _hx_class_name = u"Portal"
-    __slots__ = (u"in_summoning", u"is_summoning", u"turns_to_summon")
-    _hx_fields = [u"in_summoning", u"is_summoning", u"turns_to_summon"]
-    _hx_methods = [u"can_summon_lava_giant", u"can_summon_ice_troll", u"summon_lava_giant", u"summon_ice_troll"]
+    __slots__ = (u"is_summoning", u"currently_summoning", u"turns_to_summon", u"cost")
+    _hx_fields = [u"is_summoning", u"currently_summoning", u"turns_to_summon", u"cost"]
+    _hx_methods = [u"summon_ice_troll", u"can_summon_ice_troll", u"summon_lava_giant", u"can_summon_lava_giant"]
     _hx_statics = []
     _hx_interfaces = []
     _hx_super = Building
 
 
-    def can_summon_lava_giant(self):
-        if (self.owner.mana >= BaseObject._game.lava_giant_cost):
-            return (not self.is_summoning)
-        else:
-            return False
+    def summon_ice_troll(self):
+        orderArgs = u"\"product\": \"IceTroll\""
+        BaseObject._game._addOrder(u"produce",self,orderArgs)
+        if self.can_summon_ice_troll():
+            _hx_local_0 = self.owner
+            _hx_local_1 = _hx_local_0.mana
+            _hx_local_0.mana = (_hx_local_1 - BaseObject._game.ice_troll_cost)
+            _hx_local_0.mana
+            self.is_summoning = True
+            self.currently_summoning = u"IceTroll"
 
     def can_summon_ice_troll(self):
         if (self.owner.mana >= BaseObject._game.ice_troll_cost):
@@ -1660,28 +1847,26 @@ class Portal(Building):
     def summon_lava_giant(self):
         orderArgs = u"\"product\": \"LavaGiant\""
         BaseObject._game._addOrder(u"produce",self,orderArgs)
-        _hx_local_0 = self.owner
-        _hx_local_1 = _hx_local_0.mana
-        _hx_local_0.mana = (_hx_local_1 - BaseObject._game.lava_giant_cost)
-        _hx_local_0.mana
-        self.is_summoning = True
-        self.in_summoning = u"LavaGiant"
+        if self.can_summon_lava_giant():
+            _hx_local_0 = self.owner
+            _hx_local_1 = _hx_local_0.mana
+            _hx_local_0.mana = (_hx_local_1 - BaseObject._game.lava_giant_cost)
+            _hx_local_0.mana
+            self.is_summoning = True
+            self.currently_summoning = u"LavaGiant"
 
-    def summon_ice_troll(self):
-        orderArgs = u"\"product\": \"IceTroll\""
-        BaseObject._game._addOrder(u"produce",self,orderArgs)
-        _hx_local_0 = self.owner
-        _hx_local_1 = _hx_local_0.mana
-        _hx_local_0.mana = (_hx_local_1 - BaseObject._game.ice_troll_cost)
-        _hx_local_0.mana
-        self.is_summoning = True
-        self.in_summoning = u"IceTroll"
+    def can_summon_lava_giant(self):
+        if (self.owner.mana >= BaseObject._game.lava_giant_cost):
+            return (not self.is_summoning)
+        else:
+            return False
 
     @staticmethod
     def _hx_empty_init(_hx_o):
-        _hx_o.in_summoning = None
         _hx_o.is_summoning = None
+        _hx_o.currently_summoning = None
         _hx_o.turns_to_summon = None
+        _hx_o.cost = None
 Portal._hx_class = Portal
 _hx_classes[u"Portal"] = Portal
 
@@ -1696,6 +1881,19 @@ class Reflect(object):
         return python_Boot.field(o,field)
 Reflect._hx_class = Reflect
 _hx_classes[u"Reflect"] = Reflect
+
+
+class SpeedUp(Spell):
+    _hx_class_name = u"SpeedUp"
+    __slots__ = ()
+    _hx_fields = []
+    _hx_methods = []
+    _hx_statics = []
+    _hx_interfaces = []
+    _hx_super = Spell
+
+SpeedUp._hx_class = SpeedUp
+_hx_classes[u"SpeedUp"] = SpeedUp
 
 
 class Std(object):
@@ -2895,4 +3093,4 @@ ObjectParser._hx___currentNamespace = None
 ObjectParser._nativeAPI = None
 python_Boot.keywords = set([u"and", u"del", u"from", u"not", u"with", u"as", u"elif", u"global", u"or", u"yield", u"assert", u"else", u"if", u"pass", u"None", u"break", u"except", u"import", u"raise", u"True", u"class", u"exec", u"in", u"return", u"False", u"continue", u"finally", u"is", u"try", u"def", u"for", u"lambda", u"while"])
 python_Boot.prefixLength = len(u"_hx_")
-__all__ = ['Api', 'ObjectParser', 'BaseObject', 'GameObject', 'MapObject', 'Game', 'Player', 'Elf', 'Castle', 'Portal', 'LavaGiant', 'IceTroll', 'Building', 'Location', 'Creature']
+__all__ = ['Api', 'ObjectParser', 'BaseObject', 'Player', 'Game', 'GameObject', 'MapObject', 'Creature', 'IceTroll', 'LavaGiant', 'Elf', 'Castle', 'Portal', 'ManaFountain', 'Building', 'Location', 'Spell', 'Invisibility', 'SpeedUp']

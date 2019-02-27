@@ -21,22 +21,24 @@ class Elf:
 
 
     @staticmethod
-    def get_closest_elf(game, loc, elfDict):
+    def get_closest_elf(loc, elfDict):
         """
-        returns the key of the closest elf to the designated location
+        returns the Elf object of elf that is the closest the designated location
         :param game: game instance
         :param loc: designated location
         :param elfDict: elfDict..
-        :return: the key of the closest elf
+        :return: Elf object of the closest elf
         """
-        min_dist = elfDict.values()[0].elf.distance(loc)
-        elfKey = elfDict.keys()[0]
-        for key in elfDict.keys():
-            if elfDict[key].elf.distance(loc) < min_dist:
-                min_dist = elfDict[key].elf.distance(loc)
-                elfKey = key
-        return elfKey
-
+        if elfDict != {}:
+            elves = elfDict.values()
+            min_dist = elves[0].elf.distance(loc)
+            closest_elf = elves[0]
+            for Elf in elves[1:]:
+                tmp_dist = Elf.elf.distance(loc)
+                if tmp_dist < min_dist:
+                    min_dist = tmp_dist
+                    closest_elf = Elf
+            return closest_elf
 
     def move(self, dest):
         self.elf.move_to(dest)
@@ -91,11 +93,26 @@ class Elf:
                 self.elf.move_to(tgt)
 
     def build_portal(self, tgt):  # walks to and builds a portal at a location
+        """returns wether or not the lef built the portal"""
+
         if tgt is not None and not self.elf.already_acted:
             if self.elf.location.equals(tgt) and self.elf.can_build_portal():
                 self.elf.build_portal()
+                return True
             else:
                 self.elf.move_to(tgt)
+        return False
+
+    def build_fountain(self, tgt):  # walks to and builds a portal at a location
+        """returns wether or not the lef built the portal"""
+
+        if tgt is not None and not self.elf.already_acted:
+            if self.elf.location.equals(tgt) and self.elf.can_build_mana_fountain():
+                self.elf.build_mana_fountain()
+                return True
+            else:
+                self.elf.move_to(tgt)
+        return False
 
     def flank(self, game, dest, ignore=(False, False, False)):
         """
@@ -129,7 +146,7 @@ class Elf:
                     self.elf.cast_speed_up()
                     print "casting SpeedUp"
                     return True
-        elif game.speed_up_multiplier‎ > 10 and game.elf_max_speed < 30 and not self.is_sped_up():
+        elif game.speed_up_multiplier > 10 and game.elf_max_speed < 30 and not self.is_sped_up():
             if self.elf.can_cast_speed_up():
                 print "probs iHaveStamina but who know any way casting SpeedUp"
                 self.elf.cast_speed_up()
