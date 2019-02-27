@@ -37,7 +37,7 @@ def do_turn(game):
             fountain_amount = 1
         srtI = Start(game, elfDict, portal_amount, 1600, fountain_amount)
     if nrmI is None:
-        nrmI = Normal(game, elfDict, attackDict, agrI)
+        nrmI = Normal(game, elfDict, agrI, srtI)
     if defI is None:
         defI = Defense(game, elfDict)
 
@@ -56,7 +56,7 @@ def do_turn(game):
         agrI.do_aggressive(game, elfDict)
     elif not start_done and game.turn < (my_castle.location.distance(enemy_castle) / 100):
         print "start mode"
-        srtI.do_start(game, elfDict)
+        start_done = srtI.do_start(game, elfDict)
     else:
         print "normal mode"
         nrmI.do_normal(game, elfDict)
