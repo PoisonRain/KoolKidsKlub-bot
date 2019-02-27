@@ -138,6 +138,44 @@ class Elf:
                 self.elf.move_to(tgt)
         return False
 
+    def panic_mode(self, game, close_trolls=None, close_elves=None):
+        """
+        the elf sudenly has surviavle abilities AMAZING
+        :param game: game instence
+        :param close_trolls: list of all the trolls you consider as close (has default)
+        :param close_elves: list of all the elves you consider as close (has default)
+        :return:
+        """
+        if close_elves is None:
+            enemy_elves = game.get_enemy_living_elves()
+            distance_from_elves = int(game.elf_attack_range * 1.75)
+            close_elves = [elf for elf in enemy_elves if elf.location.distance(self.elf.location) < distance_from_elves]
+        if close_trolls is None:
+            enemy_trolls = game.get_enemy_ice_trolls()
+            distance_from_trolls = int(game.ice_troll_attack_range * 1.75)
+            close_trolls = [troll for troll in enemy_trolls if
+                            troll.location.distance(self.elf.location) < distance_from_trolls]
+
+        if len(close_trolls) + len(close_elves) > 0:
+            if self.elf.current_health / (len(close_trolls) + len(
+                    close_elves) / 0.75) < 2 and not self.is_invisible():  # checks if elf is close to die
+                if self.elf.can_cast_invisibility():
+                    print "casting Invisibility"
+                    self.elf.cast_invisibility()
+                    return True
+            elif self.elf.current_health / (len(close_trolls) + len(
+                    close_elves) / 0.75) < 1 and not self.is_sped_up():  # checks if elf is closer to die
+                if self.elf.can_cast_speed_up():
+                    self.elf.cast_speed_up()
+                    print "casting SpeedUp"
+                    return True
+        elif game.speed_up_multiplier > 10 and game.elf_max_speed < 30 and not self.is_sped_up():
+            if self.elf.can_cast_speed_up():
+                print "probs iHaveStamina but who know any way casting SpeedUp"
+                self.elf.cast_speed_up()
+                return True
+        return False
+
     def flank(self, game, dest, ignore=(False, False, False)):
         """
         full fledged flanking with different cases implemented
@@ -158,27 +196,9 @@ class Elf:
                             troll.location.distance(self.elf.location) < distance_from_trolls]
             close_elves = [elf for elf in enemy_elves if elf.location.distance(self.elf.location) < distance_from_elves]
 
-            if len(close_trolls) + len(close_elves) > 0:
-                if self.elf.current_health / (len(close_trolls) + len(
-                        close_elves) / 0.75) < 2 and not self.is_invisible():  # checks if elf is close to die
-                    if self.elf.can_cast_invisibility():
-                        print "casting Invisibility"
-                        self.elf.cast_invisibility()
-                        return True
-                elif self.elf.current_health / (len(close_trolls) + len(
-                        close_elves) / 0.75) < 1 and not self.is_sped_up():  # checks if elf is closer to die
-                    if self.elf.can_cast_speed_up():
-                        self.elf.cast_speed_up()
-                        print "casting SpeedUp"
-                        return True
-            elif game.speed_up_multiplier > 10 and game.elf_max_speed < 30 and not self.is_sped_up():
-                if self.elf.can_cast_speed_up():
-                    print "probs iHaveStamina but who know any way casting SpeedUp"
-                    self.elf.cast_speed_up()
-                    return True
-
-            print "going into the simple_flanking algorithm"
-            self.simple_flank(game, dest, ignore)
+            if not self.panic_mode(game, close_trolls, close_elves):
+                print "going into the simple_flanking algorithm"
+                self.simple_flank(game, dest, ignore)
 
     def simple_flank(self, game, dest, ignore=(False, False, False)):
         """
