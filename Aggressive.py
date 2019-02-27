@@ -142,7 +142,7 @@ class Aggressive:
                 else:
                     elf.move_speed_invis(enemy_castle)
             self.my_elves = []
-            normal.normal_update()
+            normal.normal_update(game, )
 
         self.build_portals(game, elfDict)  # i mean basically build flanking portals
 
