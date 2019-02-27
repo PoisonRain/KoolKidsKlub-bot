@@ -1,6 +1,7 @@
 from elf_kingdom import *
 from newMath import *
 import Elf
+import Normal
 
 locs = []
 
@@ -9,7 +10,7 @@ class Start:
     """ make a starting frame for the game, build starter portals, fountains etc
     for normal to maintain"""
 
-    def __init__(self, game, elfDict, portal_amount=4, portal_range=2000, fountain_amount=4, fountain_range=None):
+    def __init__(self, game, elfDict, portal_amount=3, portal_range=2000, fountain_amount=2, fountain_range=None):
         """
         initiates start
         :param game: the game instance
@@ -125,7 +126,7 @@ class Start:
             return True
 
     @staticmethod
-    def build_structure_ring(locs, elfDict, structure_type=0):
+    def build_structure_ring(game, locs, elfDict, structure_type=0):
         """
         take the locations(that were generated in get_structure_ring_locations() and trys to build the portals there
         using the closest elf to build each portal by order(technique might change in the future)
@@ -137,17 +138,24 @@ class Start:
         """
         elfDict = dict(elfDict)
         locs = list(locs)
-
+        
+        for loc in locs:
+            if Normal.Normal.portal_on_location(game, loc):
+                locs.remove(loc)
+        
         for loc in locs:
             worker_elf = Elf.Elf.get_closest_elf(loc, elfDict)
-            if structure_type == 0:
-                did_build = worker_elf.build_portal(loc)
-            else:
-                did_build = worker_elf.build_fountain(loc)
-            print did_build
-            elfDict.pop(worker_elf.elf.unique_id, None)
-            if did_build:
-                locs.remove(loc)
+            try:
+                if structure_type == 0:
+                    did_build = worker_elf.build_portal(loc)
+                else:
+                    did_build = worker_elf.build_fountain(loc)
+                print did_build
+                elfDict.pop(worker_elf.elf.unique_id, None)
+                if did_build:
+                    locs.remove(loc)
+            except:
+                print 'elves dead bois'
             if not elfDict:
                 break
         return locs
@@ -172,9 +180,9 @@ class Start:
         self.game = game
         if self.fountain_locs != []:
             print self.fountain_locs
-            self.fountain_locs = self.build_structure_ring(self.fountain_locs, elfDict, 1)
+            self.fountain_locs = self.build_structure_ring(game, self.fountain_locs, elfDict, 1)
             return False
         elif self.defense_portal_locs != []:
-            self.defense_portal_locs = self.build_structure_ring(self.defense_portal_locs, elfDict, 0)
+            self.defense_portal_locs = self.build_structure_ring(game, self.defense_portal_locs, elfDict, 0)
             return False
         return True
