@@ -71,15 +71,14 @@ class Normal:
                 return True
         return False
 
-    def do_normal(self, game, elfDict, attackDict):
+    def do_normal(self, game, elfDict):
         """
         updates normal
         does all of what the normal mode is meant to do, defend, drain mana, maintain portals.
         :param elfDict: usable elfs
-        :param attackDict: attack portals
         :return: elfs being used
         """
-        self.normal_update(game, elfDict, attackDict)
+        self.normal_update(game, elfDict)
         self.aggressive.update_attack_portals(game)
 
         self.normal_defense()  # defend the castle (if there are enemies in range)

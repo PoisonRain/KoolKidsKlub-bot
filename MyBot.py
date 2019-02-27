@@ -10,7 +10,6 @@ import flanking
 old_my_castle_health_3_turns = []
 old_my_portals = []
 elfDict = {}  # key: elf unique id; value: Elf instance
-attackDict = {}  # key: portal unique id; value: portal instance
 nrmI = None
 agrI = None
 srtI = None
@@ -53,7 +52,7 @@ def do_turn(game):
     #choosing an attack mode:
     if agrI.get_aggresive_score(game) > 0 or enemy_castle.current_health < 16:
         print "aggressive mode"
-        agrI.do_aggressive(game, elfDict)
+        agrI.do_aggressive(game, elfDict, nrmI)
     elif not start_done and game.turn < (my_castle.location.distance(enemy_castle) / 100):
         print "start mode"
         start_done = srtI.do_start(game, elfDict)
