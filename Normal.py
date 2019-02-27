@@ -3,7 +3,7 @@ from Portals import *
 from newMath import move_point_by_angle
 
 # constants
-DEFENSE_MANA_CAP = 60  # limit to when we stop defending due to low mana
+DEFENSE_MANA_CAP = 100  # limit to when we stop defending due to low mana
 MANE_DRAIN_RANGE = 1500  # the distance of checking if there is a creature in range of the enemy castel we dont want to spawn from
 LAVA_DRAIN_MANA_LIMIT = 100  # needs tweaking of course
 ENEMY_LOW_MANA_ATTACK = 50  # the limit to become a more aggresive version of normal while considering to enemy mana
@@ -96,6 +96,7 @@ class Normal:
         # if self.game.get_enemy_mana() < ENEMY_LOW_MANA_ATTACK and self.game.get_my_mana() > NORMAL_ATTACK_MODE_MANA_CAP:  # attack more? might be used more
         #     self.normal_attack_lowMana(self.attackDict)  # become more aggresive in normal if the enemy is low on
             # on mana and we have enough.
+
 
     def normal_portal_defense(self, portals):
         """
