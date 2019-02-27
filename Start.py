@@ -10,7 +10,7 @@ class Start:
     """ make a starting frame for the game, build starter portals, fountains etc
     for normal to maintain"""
 
-    def __init__(self, game, elfDict, portal_amount=3, portal_range=2000, fountain_amount=2, fountain_range=None):
+    def __init__(self, game, elfDict, portal_amount=3, portal_range=1600, fountain_amount=1, fountain_range=None):
         """
         initiates start
         :param game: the game instance
@@ -69,8 +69,6 @@ class Start:
         :return: a list of objects around the start_location facing end location
         """
         target_points = []
-        if amount % 2 != 0:
-            target_points.append(start_location)  # list of locations to build portals in
         strt_alpha = get_alpha_from_points(axis, start_location)
         pos_alpha = strt_alpha + 5
         neg_alpha = strt_alpha - 5
