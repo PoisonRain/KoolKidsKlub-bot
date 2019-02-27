@@ -222,6 +222,27 @@ class Portals:
         else:
             return False
 
+    def dumb_castle_defense(self, mana_cap):
+        ice_to_spawn = 0
+        defense_portals = self.closest_portals_sorted(self.game.get_my_castle())
+        for elf in self.game.get_enemy_living_elves():
+            if self.my_castle.distance(elf) < CASTLE_DEFENSE_RANGE:
+                ice_to_spawn += 1
+        for lava in self.game.get_enemy_lava_giants():
+            if self.my_castle.distance(lava) < CASTLE_DEFENSE_RANGE:
+                ice_to_spawn += 1
+        for ice in self.game.get_my_ice_trolls():
+            if self.my_castle.distance(ice) < CASTLE_DEFENSE_RANGE:
+                ice_to_spawn -= 1
+        for portal in defense_portals:
+            if portal.distance(self.game.get_my_castle()) < CASTLE_DEFENSE_RANGE and portal.can_summon_ice_troll() and self.game.get_my_mana() > mana_cap and ice_to_spawn > 0:
+                portal.summon_ice_troll()
+
+    def dumb_portal_defense(self, mana_cap):
+        for poratl in self.game.get_my_portals():
+
+
+
 
 class Attack_List():
     """

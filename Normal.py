@@ -8,7 +8,7 @@ MANE_DRAIN_RANGE = 1500  # the distance of checking if there is a creature in ra
 LAVA_DRAIN_MANA_LIMIT = 100  # needs tweaking of course
 ENEMY_LOW_MANA_ATTACK = 50  # the limit to become a more aggresive version of normal while considering to enemy mana
 NORMAL_ATTACK_MODE_MANA_CAP = 100  # the limit to become a more aggresive version of normal while considering our mana
-CASTLE_DEFENSE = 5000  # range of which elfs will try to destroy enemy portals, TODO: make it using range of map
+CASTLE_DEFENSE = 3000  # range of which elfs will try to destroy enemy portals, TODO: make it using range of map
 ELF_DEFENSE_BOOST_RANGE = 400  # range of attack targets portal will spawn defense to help the elfs
 ELF_DEFENSE_BOOST_MANA = 100  # mana cap to spawn defense to help elfs attack
 ENEMY_FOUNTAIN_NO_PORTALS_RANGE = 400  # range of an enemy fountain of which there can be no enemy portals for us to
@@ -26,7 +26,7 @@ class Normal:
      TODO: add uses for spells
      """
 
-    def __init__(self, game, elfDict, attackDict, aggressive):
+    def __init__(self, game, elfDict, attackDict, aggressive, start):
         """
 
         :param aggressive: instance of aggressive mode, used to make attack portals
@@ -40,6 +40,7 @@ class Normal:
         self.old_my_portals = []
         self.aggressive = aggressive
         self.my_castle = game.get_my_castle()
+        self.start = start
 
         self.portals = Portals(game, game.get_my_portals())  # create an instance of portals object to summon etc.
 
@@ -66,18 +67,26 @@ class Normal:
         :return: elfs being used
         """
         self.normal_update(game, elfDict, attackDict)
+        self.aggressive.update_attack_portals(game)
 
-        #self.normal_portal_defense(self.game.get_my_portals())  # test dis mojo
+        self.normal_defense()  # defend the castle (if there are enemies in range)
+        # self.aggressive.build_portals(game, elfDict)  # build the flanking poratls, might need to be in
+        self.start.do_start(game, elfDict)  # maintain defense portals and fountains
 
-        flanking_elves = self.build_portals(elfDict, attackDict)  # build the flanking poratls, might need to be in
-        # an if with mana and our elfs taken into account
-        self.normal_elf_defendcastle(elfDict)  # mojo fix dis (overhall)
-        self.normal_defense()  # defend the castle (if there are enemies in range); uncomment, testing defend portals; check to do of this func
+        self.normal_elf_defendcastle(elfDict)  # destroy buildings in range of defense radius(CASTLE_DEFENSE)
 
         if self.game.get_my_mana() >= LAVA_DRAIN_MANA_LIMIT:  # drain enemy mana if our mana is above our set limite
-            self.normal_enemy_mana_drain(self.attackDict)
-        if self.game.get_enemy_mana() < ENEMY_LOW_MANA_ATTACK and self.game.get_my_mana() > NORMAL_ATTACK_MODE_MANA_CAP:
-            self.normal_attack_lowMana(self.attackDict)  # become more aggresive in normal if the enemy is low on
+            self.normal_enemy_mana_drain(self.aggressive.attack_portals)
+        #self.normal_portal_defense(self.game.get_my_portals())  # test dis mojo
+
+
+        # an if with mana and our elfs taken into account
+
+
+
+
+        # if self.game.get_enemy_mana() < ENEMY_LOW_MANA_ATTACK and self.game.get_my_mana() > NORMAL_ATTACK_MODE_MANA_CAP:  # attack more? might be used more
+        #     self.normal_attack_lowMana(self.attackDict)  # become more aggresive in normal if the enemy is low on
             # on mana and we have enough.
 
         self.normal_elf_defendcastle(elfDict)
@@ -98,7 +107,7 @@ class Normal:
         defend the castle if are above the mana cap using the Portals class
         """
         if self.game.get_my_mana() > DEFENSE_MANA_CAP:
-            self.portals.portals_defend_castle(DEFENSE_MANA_CAP)
+            self.portals.dumb_castle_defense(DEFENSE_MANA_CAP)
 
     def normal_update(self, game, elfDict, attackDict):
         """
