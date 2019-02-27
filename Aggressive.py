@@ -133,7 +133,7 @@ class Aggressive:
     def do_aggressive(self, game, elfDict):
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]  # update self.my_elves
         enemy_castle = game.get_enemy_castle()
-        castle_low_health = 10
+        castle_low_health = 16
 
         if enemy_castle.current_health <= castle_low_health:  # rush the enemy castle if its low health
             for elf in self.my_elves:

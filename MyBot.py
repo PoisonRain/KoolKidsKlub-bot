@@ -51,7 +51,7 @@ def do_turn(game):
         my_portals = []
 
     #choosing an attack mode:
-    if agrI.get_aggresive_score(game) > 0:
+    if agrI.get_aggresive_score(game) > 0 or enemy_castle.current_health < 16:
         print "aggressive mode"
         agrI.do_aggressive(game, elfDict)
     elif not start_done and game.turn < (my_castle.location.distance(enemy_castle) / 100):
