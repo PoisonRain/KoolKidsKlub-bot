@@ -13,10 +13,10 @@ class Start:
         """
         initiates start
         :param game: the game instance
-        :param elfDict: the elfDict dictenary
-        :param portal_amount: the amout of defence portals to be built
+        :param elfDict: the elfDict dictionary
+        :param portal_amount: the amount of defence portals to be built
         :param portal_range: the radius the portals should be built from my_castle
-        :param fountain_amount: the amout of fountains to be built
+        :param fountain_amount: the amount of fountains to be built
         :param fountain_range: the radius the fountains should be built from my_castle
         """
         if fountain_range is None:
@@ -34,7 +34,7 @@ class Start:
         castle(degree shift from the line between both castles)
         :param game: the game instance
         :param radius_from_castle: how far away the points should be from the castle
-        :param amount: how many points, the more points the denser theyll be
+        :param amount: how many points, the more points the denser they'll be
         """
         start_location = game.get_my_castle().location  # change this to change the center point
         end_location = start_location.towards(game.get_enemy_castle().location,
@@ -48,7 +48,7 @@ class Start:
         castle(degree shift from the line between both castles)
         :param game: the game instance
         :param radius_from_castle: how far away the points should be from the castle
-        :param amount: how many points, the more points the denser theyll be
+        :param amount: how many points, the more points the denser they'll be
         """
         start_location = game.get_my_castle().location  # change this to change the center point
         end_location = start_location.towards(game.get_enemy_castle().location,
@@ -59,10 +59,10 @@ class Start:
     def get_object_ring_locations(self, game, axis, start_location, amount, object_type=0):
         """
         returns a list of where to place a semi ring of objects around a location
-        :param game: the game instence
-        :param axis: the axis (center) around where the object whould be built
+        :param game: the game instance
+        :param axis: the axis (center) around where the object would be built
         :param start_location: the first location (will be moving to the left and right from this location)
-        :param amount: the amout of location it will return
+        :param amount: the amount of location it will return
         :param object_type: 0 for portals, 1 for fountains
         :return:
         """
@@ -132,7 +132,7 @@ class Start:
     @staticmethod
     def build_structure_ring(locs, elfDict, structure_type=0):
         """
-        take the locations(that were generated in get_structure_ring_locations() and trys to build the portals there
+        take the locations(that were generated in get_structure_ring_locations() and tries to build the portals there
         using the closest elf to build each portal by order(technique might change in the future)
         if not built, returned in a list
         :param locs: the locations to build the portals
@@ -171,7 +171,7 @@ class Start:
     def do_start(self, game, elfDict):
         """
         runs one turn in start
-        :param elfDict: the elfDict dictanary
+        :param elfDict: the elfDict dictionary
         :return: True if has finished building everything; else False
         """
         self.game = game
