@@ -57,6 +57,20 @@ class Normal:
             if portal.location.equals(loc):
                 return True
         return False
+    
+    @staticmethod
+    def fountain_on_location(game, loc):
+        """
+        get a location and checks if there is a fountain(friendly) there
+        :param game: the game instance
+        :param loc: the location on which the fountain(friendly) should be
+        :return: True if there is a fountain there, False else
+        """
+        my_fountains = game.get_my_mana_fountains()
+        for fountain in my_fountains:
+            if fountain.location.equals(loc):
+                return True
+        return False
 
     def do_normal(self, game, elfDict, attackDict):
         """

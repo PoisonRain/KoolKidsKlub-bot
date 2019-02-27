@@ -10,7 +10,7 @@ class Start:
     """ make a starting frame for the game, build starter portals, fountains etc
     for normal to maintain"""
 
-    def __init__(self, game, elfDict, portal_amount=3, portal_range=1600, fountain_amount=1, fountain_range=None):
+    def __init__(self, game, elfDict, portal_amount=3, portal_range=2000, fountain_amount=2, fountain_range=None):
         """
         initiates start
         :param game: the game instance
@@ -72,11 +72,15 @@ class Start:
         strt_alpha = get_alpha_from_points(axis, start_location)
         pos_alpha = strt_alpha + 5
         neg_alpha = strt_alpha - 5
-        while len(
-                target_points) < amount and pos_alpha < strt_alpha + 360 and neg_alpha > strt_alpha - 360:  # while the amount is not reached and the points didnt go a full circle
+        while len(target_points) < amount and pos_alpha < strt_alpha + 360 and neg_alpha > strt_alpha - 360:  # while the amount is not reached and the points didnt go a full circle
 
             pos_point = get_point_by_alpha(pos_alpha % 360, axis, start_location)
-            if self.can_build_objects_by_list(game, pos_point, target_points, object_type):
+            if object_type == 0 and Normal.Normal.portal_on_location(game, pos_point) or object_type == 1 and Normal.Normal.fountain_on_location(game, pos_point):
+                target_points.append(pos_point)
+                print 'neg_point: ' + str(pos_point)
+                if len(target_points) >= amount:
+                    break
+            elif self.can_build_objects_by_list(game, pos_point, target_points, object_type):
                 target_points.append(pos_point)
                 print 'pos_point: ' + str(pos_point)
                 if len(target_points) >= amount:
@@ -84,7 +88,12 @@ class Start:
 
             pos_alpha += 5
             neg_point = get_point_by_alpha(neg_alpha % 360, axis, start_location)
-            if self.can_build_objects_by_list(game, neg_point, target_points, object_type):
+            if object_type == 0 and Normal.Normal.portal_on_location(game, neg_point) or object_type == 1 and Normal.Normal.fountain_on_location(game, neg_point):
+                target_points.append(neg_point)
+                print 'neg_point: ' + str(neg_point)
+                if len(target_points) >= amount:
+                    break
+            elif self.can_build_objects_by_list(game, neg_point, target_points, object_type):
                 target_points.append(neg_point)
                 print 'neg_point: ' + str(neg_point)
                 if len(target_points) >= amount:
@@ -112,7 +121,7 @@ class Start:
                 return False
             for other_location in future_objects_list:
                 if object_location.in_range(other_location,
-                                            game.portal_size * 2):  # 100 is a random number to prevent them from being stuck together
+                                            game.portal_size * 3):  # 100 is a random number to prevent them from being stuck together
                     return False
             return True
         else:
@@ -120,7 +129,7 @@ class Start:
                 return False
             for other_location in future_objects_list:
                 if object_location.in_range(other_location,
-                                            game.mana_fountain_size * 2):  # 100 is a random number to prevent them
+                                            game.mana_fountain_size * 3):  # 100 is a random number to prevent them
                     # from being stuck
                     # together
                     return False
@@ -180,7 +189,7 @@ class Start:
                 locs.remove(loc)
 
         for loc in locs:
-            worker_elf = Elf.Elf.get_closest_elf(loc, elfDict, True)
+            worker_elf = Elf.Elf.get_closest_elf(loc, elfDict)
             try:
                 if structure_type == 0:
                     if worker_elf.elf.location.equals(loc) and worker_elf.elf.can_build_portal():
