@@ -71,15 +71,14 @@ class Normal:
                 return True
         return False
 
-    def do_normal(self, game, elfDict, attackDict):
+    def do_normal(self, game, elfDict):
         """
         updates normal
         does all of what the normal mode is meant to do, defend, drain mana, maintain portals.
         :param elfDict: usable elfs
-        :param attackDict: attack portals
         :return: elfs being used
         """
-        self.normal_update(game, elfDict, attackDict)
+        self.normal_update(game, elfDict)
         self.aggressive.update_attack_portals(game)
 
         self.portals.dumb_portal_defense(PORTAL_SELF_DEFENSE_MANA_CAP)
@@ -128,33 +127,17 @@ class Normal:
             if lava and ice and portals[0].can_summon_ice_troll():
                 portals[0].summon_ice_troll()
 
-
-    def normal_update(self, game, elfDict, attackDict):
+    def normal_update(self, game, elfDict):
         """
         Update everything that changes between turns or needs updating
         :param game: updated instance of game
         :param elfDict: usable elfs
-        :param attackDict: attack portals
         """
         self.game = game  # update game
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]  # update self.my_elves
         self.game = game  # update self.game
-        self.update_dirDict(elfDict)  # update dirDict
         self.portals.portals_update(game)  # update portals (the object)
         self.my_castle = game.get_my_castle()
-
-    def update_dirDict(self, elfDict):
-        """
-        gets updated elfDict checks for new entries gives them in an altering manner a direction to go
-        and deletes dead elves from the dictionary
-        """
-        for uid in elfDict.keys():
-            if uid not in self.dirDict:
-                self.dirDict[uid] = self.switch_sides
-                if self.switch_sides == 1:
-                    self.switch_sides = -1
-                else:
-                    self.switch_sides = 1
 
     def normal_enemy_mana_drain(self, attack_portals):
         """

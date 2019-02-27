@@ -130,7 +130,7 @@ class Aggressive:
             else:  # if has nothing to attack attack the enemy castle
                 elf.attack(enemy_castle)
 
-    def do_aggressive(self, game, elfDict):
+    def do_aggressive(self, game, elfDict, normal):
         self.my_elves = [elf for elf in elfDict.values() if not elf.elf.already_acted]  # update self.my_elves
         enemy_castle = game.get_enemy_castle()
         castle_low_health = 16
@@ -142,6 +142,9 @@ class Aggressive:
                 else:
                     elf.move_speed_invis(enemy_castle)
             self.my_elves = []
+            normal.normal_update(game, elfDict)
+            normal.dumb_portal_defense(0)
+            normal.dumb_castle_defense(0)
 
         self.build_portals(game, elfDict)  # i mean basically build flanking portals
 
