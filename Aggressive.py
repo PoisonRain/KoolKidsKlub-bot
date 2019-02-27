@@ -40,12 +40,12 @@ class Aggressive:
 
     def get_aggresive_score(self, game):
         hp_delta = game.get_my_castle().current_health - game.get_enemy_castle().current_health
-        attack_portals_built = self.attack_portals_built(game)
+        attack_portals_built = len(self.attack_portals)
         enemy_mana = game.get_enemy_mana()
         # need to find best factors for performance, after testing.(jacob)
-        hp_factor = 1
-        attack_portals_factor = 1
-        enemy_mana_factor = -0.1
+        hp_factor = 0.1
+        attack_portals_factor = 1.5
+        enemy_mana_factor = -0.02
 
         return hp_delta * hp_factor + attack_portals_built * attack_portals_factor + enemy_mana * enemy_mana_factor
 
