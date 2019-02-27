@@ -210,7 +210,7 @@ class Elf:
             self.elf.move_to(trgt_point)
             return True
         else:
-            while pos_alpha < (strt_alpha + 100) % 360 or neg_alpha > (strt_alpha - 100) % 360:
+            while pos_alpha < (strt_alpha + 45) % 360 or neg_alpha > (strt_alpha - 45) % 360:
                 pos_point = get_point_by_alpha(pos_alpha, center_point, trgt_point)
                 if is_safe(pos_point):
                     self.elf.move_to(pos_point)
