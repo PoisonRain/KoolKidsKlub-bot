@@ -1,5 +1,4 @@
 from flanking import tuple_to_location, location_to_tuple
-from elf_kingdom import Location
 import math
 
 
@@ -12,11 +11,14 @@ def get_alpha_from_points(center_point, trgt_point):
     """
     radius = center_point.distance(trgt_point)
 
-    a = math.acos(trgt_point.col / (center_point.col + radius))
+    center_point = location_to_tuple(center_point)
+    trgt_point = location_to_tuple(trgt_point)
 
-    if trgt_point.row > center_point.row:
-        return math.degrees(a) % 360
-    return (360 - math.degrees(a)) % 360
+    a = math.acos(trgt_point[0] / (center_point[0] + radius))
+
+    if trgt_point[1] > center_point[1]:
+        return math.degrees(a)
+    return 360 - math.degrees(a)
 
 
 def get_point_by_alpha(alpha, center_point, trgt_point):
@@ -28,15 +30,14 @@ def get_point_by_alpha(alpha, center_point, trgt_point):
     :return: a new point on the circle at the provided angle
     """
     radius = center_point.distance(trgt_point)
+    center_point = location_to_tuple(center_point)
     alpha = math.radians(alpha)
-    if alpha < math.pi:
-        x = center_point.col + radius * math.cos((math.pi/2)-alpha)
-        y = center_point.row + radius * math.sin((math.pi/2)-alpha)
-    else:
-        x = center_point.col + radius * math.cos(alpha)
-        y = center_point.row + radius * math.sin(alpha)
+    x = center_point[0] + radius * math.cos(alpha)
+    y = center_point[1] + radius * math.sin(alpha)
 
-    return Location(int(y), int(x))
+    tup = (int(x), int(y))
+
+    return tuple_to_location(tup)
 
 
 def move_point_by_angle(axis, point, angle_delta):
@@ -49,4 +50,4 @@ def move_point_by_angle(axis, point, angle_delta):
     """
     angle = get_alpha_from_points(axis, point)
     angle += angle_delta
-    return get_point_by_alpha(angle, axis, point)
+    return get_point_by_alpha(math.radians(angle), axis, point)
