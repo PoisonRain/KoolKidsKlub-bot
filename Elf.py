@@ -41,7 +41,7 @@ class Elf:
         """
         if elfDict != {}:
             elves = elfDict.values()
-            if already_acted_check_False:
+            if already_acted_check is False:
                 [elf for elf in elves if not elf.elf.already_acted]
             min_dist = elves[0].elf.distance(loc)
             closest_elf = elves[0]
