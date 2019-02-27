@@ -125,12 +125,11 @@ class Normal:
                 lava, ice = True, True
             else:
                 closest_creature = self.sorted_map_objects(self.game.get_enemy_castle(),(self.game.get_my_lava_giants(), self.game.get_enemy_ice_trolls()))
-                if self.game.get_enemy_castle().distance(closest_creature[0]) < MANE_DRAIN_RANGE:
+                if self.game.get_enemy_castle().distance(closest_creature[0]) > MANE_DRAIN_RANGE:
                     lava, ice = True, True
             if lava and ice and portals[0].can_summon_lava_giant():
                 portals[0].summon_lava_giant()
                 lava, ice = False, False
-                print 'yeeeeeet'
 
     def normal_update(self, game, elfDict):
         """
