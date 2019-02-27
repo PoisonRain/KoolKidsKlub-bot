@@ -29,15 +29,16 @@ class Elf:
         :param elfDict: elfDict..
         :return: Elf object of the closest elf
         """
-        elves = elfDict.values()
-        min_dist = elves[0].elf.distance(loc)
-        closest_elf = elves[0]
-        for Elf in elves[1:]:
-            tmp_dist = Elf.elf.distance(loc)
-            if tmp_dist < min_dist:
-                min_dist = tmp_dist
-                closest_elf = Elf
-        return closest_elf
+        if elfDict != {}:
+            elves = elfDict.values()
+            min_dist = elves[0].elf.distance(loc)
+            closest_elf = elves[0]
+            for Elf in elves[1:]:
+                tmp_dist = Elf.elf.distance(loc)
+                if tmp_dist < min_dist:
+                    min_dist = tmp_dist
+                    closest_elf = Elf
+            return closest_elf
 
     def move(self, dest):
         self.elf.move_to(dest)

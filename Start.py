@@ -67,8 +67,9 @@ class Start:
         :return:
         """
         target_points = []
-        if amount%2 != 0:
+        if amount % 2 != 0:
             target_points.append(start_location)  # list of locations to build portals in
+        else: amount += 1
         strt_alpha = get_alpha_from_points(axis, start_location)
         pos_alpha = strt_alpha + 5
         neg_alpha = strt_alpha - 5
