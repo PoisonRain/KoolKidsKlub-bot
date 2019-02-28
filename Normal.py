@@ -88,8 +88,8 @@ class Normal:
 
         self.normal_elf_defendcastle(elfDict)  # destroy buildings in range of defense radius(CASTLE_DEFENSE)
 
-        if self.game.get_my_mana() >= LAVA_DRAIN_MANA_LIMIT:  # drain enemy mana if our mana is above our set limite
-            self.normal_enemy_mana_drain(self.aggressive.attack_portals)
+        # drain enemy mana if our mana is above our set limite
+        self.new_mana_bait(LAVA_DRAIN_MANA_LIMIT)
         #self.normal_portal_defense(self.game.get_my_portals())  # test dis mojo
 
 
