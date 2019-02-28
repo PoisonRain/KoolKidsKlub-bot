@@ -79,7 +79,7 @@ class Infrastructure(Start):
         except Exception:
             print Exception, "!!!404!!!"
 
-    def add_Infrastructure(self):
+    def add_infrastructure(self):
         """
         adds the next portal location to the self.portal_locations
         """
