@@ -7,6 +7,7 @@ PORTAL_HELP_DEFEND_RANGE = 200
 DEFENSE_PORTAL_RANGE = 2000
 CASTLE_DEFEND_FROM_ELFS = 800
 
+
 class Portals:
     """
     class for portals contain stuff like enemies around portal and other useful funcs
@@ -20,16 +21,17 @@ class Portals:
         self.my_castle = game.get_my_castle()
 
     @staticmethod
-    def get_portal_on_location(game, loc):
+    def portal_on_location(game, loc, deviation=40):
         """
-        get the portal on the location
-        :param game: the game instence
-        :param loc: the location on which you check if the portal exists
-        :return: the portal if it exists False else
+        get a location and checks if there is a portal(friendly) there
+        :param game: the game instance
+        :param loc: the location on which the portal(friendly) should be
+        :param deviation: the amout of acceptble deviation
+        :return: True if there is a portal there, False else
         """
-        portals = game.get_my_portals()
-        for portal in portals:
-            if portal.location.equals(loc):
+        my_portals = game.get_my_portals()
+        for portal in my_portals:
+            if portal.distance(loc) < deviation:
                 return portal
         return False
 
@@ -245,8 +247,6 @@ class Portals:
             for elf in self.game.get_enemy_living_elves():
                 if portal.distance(elf) < PORTAL_SELF_DEFENSE_RANGE and portal.can_summon_ice_troll() and self.game.get_my_mana() > mana_cap:
                     portal.summon_ice_troll()
-
-
 
 
 class Attack_List():

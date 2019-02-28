@@ -1,5 +1,6 @@
 from elf_kingdom import *
 from newMath import *
+from Portals import Portals
 import Elf
 import Normal
 
@@ -75,7 +76,8 @@ class Start:
         while len(target_points) < amount and pos_alpha < strt_alpha + 360 and neg_alpha > strt_alpha - 360:  # while the amount is not reached and the points didnt go a full circle
 
             pos_point = get_point_by_alpha(pos_alpha % 360, axis, start_location)
-            if object_type == 0 and Normal.Normal.portal_on_location(game, pos_point) or object_type == 1 and Normal.Normal.fountain_on_location(game, pos_point):
+            if object_type == 0 and Portals.portal_on_location(game, pos_point) or object_type == 1 and \
+                    Normal.Normal.fountain_on_location(game, pos_point):
                 target_points.append(pos_point)
                 print 'neg_point: ' + str(pos_point)
                 if len(target_points) >= amount:
@@ -88,7 +90,8 @@ class Start:
 
             pos_alpha += 5
             neg_point = get_point_by_alpha(neg_alpha % 360, axis, start_location)
-            if object_type == 0 and Normal.Normal.portal_on_location(game, neg_point) or object_type == 1 and Normal.Normal.fountain_on_location(game, neg_point):
+            if object_type == 0 and Portals.portal_on_location(game, neg_point) or object_type == 1 and \
+                    Normal.Normal.fountain_on_location(game, neg_point):
                 target_points.append(neg_point)
                 print 'neg_point: ' + str(neg_point)
                 if len(target_points) >= amount:
@@ -150,7 +153,7 @@ class Start:
         locs = list(locs)
         
         for loc in locs:
-            if Normal.Normal.portal_on_location(game, loc):
+            if Portals.portal_on_location(game, loc):
                 locs.remove(loc)
         
         for loc in locs:
@@ -185,7 +188,7 @@ class Start:
         locs = list(locs)
 
         for loc in locs:
-            if Normal.Normal.portal_on_location(game, loc):
+            if Portals.portal_on_location(game, loc):
                 locs.remove(loc)
 
         for loc in locs:

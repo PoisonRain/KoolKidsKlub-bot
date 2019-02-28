@@ -42,20 +42,6 @@ class Normal:
         self.start = start
 
         self.portals = Portals(game, game.get_my_portals())  # create an instance of portals object to summon etc.
-
-    @staticmethod
-    def portal_on_location(game, loc):
-        """
-        get a location and checks if there is a portal(friendly) there
-        :param game: the game instance
-        :param loc: the location on which the portal(friendly) should be
-        :return: True if there is a portal there, False else
-        """
-        my_portals = game.get_my_portals()
-        for portal in my_portals:
-            if portal.location.equals(loc):
-                return True
-        return False
     
     @staticmethod
     def fountain_on_location(game, loc):

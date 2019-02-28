@@ -4,6 +4,7 @@ from Start import Start
 from Aggressive import Aggressive
 from Normal import Normal
 from Defense import Defense
+from Infrastructure import Infrastructure
 import flanking
 
 # old state:
@@ -14,14 +15,15 @@ nrmI = None
 agrI = None
 srtI = None
 defI = None
-start_done = False
+infI = None
+start_done = True
 max_dist_from_castle = 12000
 defence_portal_dist = 2000  # portals we consider as our defence portals
 
 
 def do_turn(game):
     # vars
-    global elfDict, attackDict, agrI, nrmI, srtI, defI, old_my_portals, old_my_castle_health_3_turns, start_done
+    global elfDict, attackDict, agrI, nrmI, srtI, defI, infI, old_my_portals, old_my_castle_health_3_turns, start_done
     my_elves = game.get_my_living_elves()
     my_portals = game.get_my_portals()
     enemy_castle = game.get_enemy_castle()
@@ -39,6 +41,8 @@ def do_turn(game):
         nrmI = Normal(game, elfDict, agrI, srtI)
     if defI is None:
         defI = Defense(game, elfDict)
+    if infI is None:
+        infI = Infrastructure(game, elfDict)
 
     if game.turn == 1:
         flanking.initialize(my_elves)
@@ -49,16 +53,19 @@ def do_turn(game):
     if my_portals is None:  # sets list to list if its null
         my_portals = []
 
-    #choosing an attack mode:
-    if agrI.get_aggresive_score(game) > 0 or enemy_castle.current_health < 16:
-        print "aggressive mode"
-        agrI.do_aggressive(game, elfDict, nrmI)
-    elif not start_done and game.turn < (my_castle.location.distance(enemy_castle) / 100):
-        print "start mode"
-        start_done = srtI.do_start(game, elfDict)
-    else:
-        print "normal mode"
-        nrmI.do_normal(game, elfDict)
+    infI.update(game, elfDict)
+    infI.add_infrastructure()
+    infI.build_and_maintain()
+    ##choosing an attack mode:#
+    #if agrI.get_aggresive_score(game) > 0 or enemy_castle.current_health < 16:
+    #    print "aggressive mode"
+    #    agrI.do_aggressive(game, elfDict, nrmI)
+    #elif not start_done and game.turn < (my_castle.location.distance(enemy_castle) / 100):
+    #    print "start mode"
+    #    start_done = srtI.do_start(game, elfDict)
+    #else:
+    #    print "normal mode"
+    #    nrmI.do_normal(game, elfDict)
 
     # update old state:
     old_my_portals = my_portals
