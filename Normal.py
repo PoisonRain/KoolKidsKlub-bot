@@ -118,7 +118,7 @@ class Normal:
     def new_mana_bait(self, mana_cap):
         lava, ice = False, False
         if self.game.get_my_mana() > mana_cap:
-            portals = self.portals.closest_portals_sorted(self.game.get_enemy_castle())
+            portals = self.portals.closest_portals_sorted(self.game, self.game.get_enemy_castle())
             if len(portals) == 0:
                 return False
             if len(self.game.get_my_lava_giants()) == 0 and len(self.game.get_enemy_ice_trolls()) == 0:
@@ -226,7 +226,7 @@ class Normal:
                             else:
                                 self.my_elves[i].attack(target)
                             if self.game.get_my_mana() > ELF_DEFENSE_BOOST_MANA:  # summon defense to help the elfs if there is a need
-                                defense_portals = self.portals.closest_portals_sorted(target)
+                                defense_portals = self.portals.closest_portals_sorted(self.game, target)
                                 if len(defense_portals) > 0 and defense_portals[0].distance(
                                         target) < ELF_DEFENSE_BOOST_RANGE:
                                     enemies = self.portals.enemy_creatures_in_radius(400, target)

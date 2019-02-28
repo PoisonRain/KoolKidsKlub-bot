@@ -164,8 +164,8 @@ class Start:
                 elfDict.pop(worker_elf.elf.unique_id, None)
                 if did_build:
                     locs.remove(loc)
-            except:
-                print 'elves dead bois'
+            except Exception:
+                print Exception
             if not elfDict:
                 break
         return locs

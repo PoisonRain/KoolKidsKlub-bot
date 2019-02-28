@@ -125,13 +125,15 @@ class Portals:
             if self.game.get_my_mana() < mana_cap or len(defense_portals) == 0 or len(enemies) == 0:
                 break
 
-    def closest_portals_sorted(self, point):
+    @staticmethod
+    def closest_portals_sorted(game, point):
         """
         note: used to be portal instead of point, may be better suited in a utility class / file
+        :param game: game instence
         :param point: point to form the list around
         :return: list of the closest portals to the given point
         """
-        my_portals = self.game.get_my_portals()
+        my_portals = game.get_my_portals()
         my_portals.sort(key=lambda x: x.location.distance(point), reverse=False)
         return my_portals
 
@@ -174,7 +176,7 @@ class Portals:
         for ice in self.game.get_my_ice_trolls():  # for each friendly ice subtract 1 ice to prevent spam
             if portal().distance(ice) < PORTAL_SELF_DEFENSE_RANGE:
                 count -= 1
-        closest_portals = self.closest_portals_sorted(self.game.get_my_castle())
+        closest_portals = self.closest_portals_sorted(self.game, self.game.get_my_castle())
         print(str(count) + ' dddddddd')
         for i in range(int(count)):
             print(str(i) + 'print i and stuff idk')
@@ -224,7 +226,7 @@ class Portals:
 
     def dumb_castle_defense(self, mana_cap):
         ice_to_spawn = 0
-        defense_portals = self.closest_portals_sorted(self.game.get_my_castle())
+        defense_portals = self.closest_portals_sorted(self.game, self.game.get_my_castle())
         for elf in self.game.get_enemy_living_elves():
             if self.my_castle.distance(elf) < CASTLE_DEFENSE_RANGE:
                 ice_to_spawn += 1
