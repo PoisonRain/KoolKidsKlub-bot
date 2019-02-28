@@ -92,7 +92,7 @@ class Elf:
         """
         move with invisibility
         :param tgt: the final location
-        """
+        """#
         if self.act():
             if not self.is_invisible() and self.elf.can_cast_invisibility():
                 self.elf.cast_invisibility()
@@ -244,10 +244,11 @@ class Elf:
                 for elf in enemy_elves:
                     if (dest.distance(elf) > distance_from_elves > elf.location.distance(point)) and not ignore[0]:
                         return False
-                for portal in enemy_portals:
-                    if (dest.distance(portal) > distance_from_portals > portal.location.distance(point)) and not ignore[
-                        1]:
-                        return False
+                #for portal in enemy_portals:
+                #    if (dest.distance(portal) > distance_from_portals > portal.location.distance(point)) and not
+                        #    ignore[
+                #        1]:
+                #        return False
                 for troll in enemy_trolls:
                     if (dest.distance(troll) > distance_from_trolls > troll.location.distance(point)) and not ignore[2]:
                         return False

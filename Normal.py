@@ -56,7 +56,7 @@ class Normal:
             if portal.location.equals(loc):
                 return True
         return False
-    
+
     @staticmethod
     def fountain_on_location(game, loc):
         """
@@ -78,25 +78,26 @@ class Normal:
         :param elfDict: usable elfs
         :return: elfs being used
         """
+        if len(game.get_enemy_portals()) == 0:
+            self.aggressive.do_aggressive(game, elfDict, self)
+            return True
         self.normal_update(game, elfDict)
         self.aggressive.update_attack_portals(game)
 
         self.portals.dumb_portal_defense(PORTAL_SELF_DEFENSE_MANA_CAP)
         self.normal_defense()  # defend the castle (if there are enemies in range)
+        if game.turn < 100:
+            self.normal_elf_defendcastle(elfDict)  # destroy buildings in range of defense radius(CASTLE_DEFENSE)
         self.aggressive.build_portals(game, elfDict)  # build the flanking poratls, might need to be in
         self.start.do_start(game, elfDict)  # maintain defense portals and fountains
-
-        self.normal_elf_defendcastle(elfDict)  # destroy buildings in range of defense radius(CASTLE_DEFENSE)
+        if game.turn > 100:
+            self.normal_elf_defendcastle(elfDict)  # destroy buildings in range of defense radius(CASTLE_DEFENSE)
 
         # drain enemy mana if our mana is above our set limite
-        self.new_mana_bait(LAVA_DRAIN_MANA_LIMIT)
-        #self.normal_portal_defense(self.game.get_my_portals())  # test dis mojo
+        self.new_mana_bait(
+            LAVA_DRAIN_MANA_LIMIT)  # self.normal_portal_defense(self.game.get_my_portals())  # test dis mojo
 
-
-        # if self.game.get_enemy_mana() < ENEMY_LOW_MANA_ATTACK and self.game.get_my_mana() > NORMAL_ATTACK_MODE_MANA_CAP:  # attack more? might be used more
-        #     self.normal_attack_lowMana(self.attackDict)  # become more aggresive in normal if the enemy is low on
-            # on mana and we have enough.
-
+        # if self.game.get_enemy_mana() < ENEMY_LOW_MANA_ATTACK and self.game.get_my_mana() > NORMAL_ATTACK_MODE_MANA_CAP:  # attack more? might be used more  #     self.normal_attack_lowMana(self.attackDict)  # become more aggresive in normal if the enemy is low on  # on mana and we have enough.
 
     def normal_portal_defense(self, portals):
         """
@@ -124,7 +125,8 @@ class Normal:
             if len(self.game.get_my_lava_giants()) == 0 and len(self.game.get_enemy_ice_trolls()) == 0:
                 lava, ice = True, True
             else:
-                closest_creature = self.sorted_map_objects(self.game.get_enemy_castle(),(self.game.get_my_lava_giants(), self.game.get_enemy_ice_trolls()))
+                closest_creature = self.sorted_map_objects(self.game.get_enemy_castle(), (
+                self.game.get_my_lava_giants(), self.game.get_enemy_ice_trolls()))
                 if self.game.get_enemy_castle().distance(closest_creature[0]) > MANE_DRAIN_RANGE:
                     lava, ice = True, True
             if lava and ice and portals[0].can_summon_lava_giant():
@@ -179,22 +181,7 @@ class Normal:
         """
         flanking_elves = self.aggressive.outside_aggressive_buildportals(self.game, elfDict,
                                                                          attackDict)  # game, elfDict, attackDict
-        return flanking_elves
-        # enemy_castle = self.game.get_enemy_castle()
-        # flanking_elves = []
-        # distance_from_tgt = 900
-        #
-        # if len(self.attackDict) < 2:  # if there are not enough portals
-        #     for elf in self.my_elves[0:2]:  # build portals with all elves (atm builds with only 1):
-        #         location_to_move = elf.move_normal(enemy_castle.location, distance_from_tgt, self.dirDict[elf.elf.unique_id])
-        #         if elf.elf.location.equals(location_to_move):  # check if elf is in designated location
-        #             if elf.elf.can_build_portal():  # if able to built portal
-        #                 elf.elf.build_portal()
-        #                 elf.was_building = True
-        #         else:  # if not at location to build move to the location
-        #             elf.move(location_to_move)
-        #         flanking_elves.append(elf)
-        # return flanking_elves
+        return flanking_elves  # enemy_castle = self.game.get_enemy_castle()  # flanking_elves = []  # distance_from_tgt = 900  #  # if len(self.attackDict) < 2:  # if there are not enough portals  #     for elf in self.my_elves[0:2]:  # build portals with all elves (atm builds with only 1):  #         location_to_move = elf.move_normal(enemy_castle.location, distance_from_tgt, self.dirDict[elf.elf.unique_id])  #         if elf.elf.location.equals(location_to_move):  # check if elf is in designated location  #             if elf.elf.can_build_portal():  # if able to built portal  #                 elf.elf.build_portal()  #                 elf.was_building = True  #         else:  # if not at location to build move to the location  #             elf.move(location_to_move)  #         flanking_elves.append(elf)  # return flanking_elves
 
     def normal_elf_defendcastle(self, elfDict):
         """

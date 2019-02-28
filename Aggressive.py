@@ -42,12 +42,16 @@ class Aggressive:
         hp_delta = game.get_my_castle().current_health - game.get_enemy_castle().current_health
         attack_portals_built = len(self.attack_portals)
         enemy_mana = game.get_enemy_mana()
+        elf_delta = len(game.get_my_living_elves()) - len(game.get_enemy_living_elves())
         # need to find best factors for performance, after testing.(jacob)
         hp_factor = 0.1
         attack_portals_factor = 1.5
         enemy_mana_factor = -0.02
+        elf_factor = 2
 
-        return hp_delta * hp_factor + attack_portals_built * attack_portals_factor + enemy_mana * enemy_mana_factor
+        score = hp_delta * hp_factor + attack_portals_built * attack_portals_factor + enemy_mana * enemy_mana_factor + elf_delta * elf_factor
+        print score
+        return score
 
     def build_portals(self, game, elfDict):
         """
@@ -60,8 +64,8 @@ class Aggressive:
             self.attack_portal_amount = 2
             if game.turn == 150 or game.turn == 50 or (game.turn > 150 and game.turn % 200 == 0):
                 self.portal_locs = self.get_attack_portal_location(game, self.attack_portal_amount)
-            if len([portal for portal in my_portals if portal.location.distance(enemy_castle.location) < 1500]) + \
-                len([elf for elf in game.get_my_living_elves() if elf.is_building is True]) < self.attack_portal_amount:
+            if len([portal for portal in my_portals if portal.location.distance(enemy_castle.location) < 1500]) + len(
+                [elf for elf in game.get_my_living_elves() if elf.is_building is True]) < self.attack_portal_amount:
                 self.not_built = self.portalutil.build_structure_ring_flanking(game, self.portal_locs, elfDict)
 
     def attack(self, game):
@@ -117,7 +121,7 @@ class Aggressive:
                 min_dist = self.game.rows + self.game.cols
                 fountain_to_attack = None
                 for fountain in [fountain for fountain in game.get_enemy_mana_fountains() if
-                               fountain.location.distance(enemy_castle) < 2500]:
+                                 fountain.location.distance(enemy_castle) < 2500]:
                     if elf.elf.location.distance(fountain.location) < min_dist:
                         min_dist = elf.elf.location.distance(fountain.location)
                         fountain_to_attack = fountain
@@ -170,12 +174,12 @@ class Aggressive:
         my_castle = game.get_my_castle()
         locs = []
         while len(locs) < amount:
-            locs = self.portalutil.get_object_ring_locations(game, enemy_castle.location, enemy_castle.location.towards(
-                my_castle, radius), 100)
+            locs = self.portalutil.get_object_ring_locations(game, enemy_castle.location,
+                                                             enemy_castle.location.towards(my_castle, radius), 100)
             print locs, "init locs"
             radius += radius_delta
-            if len(locs) > amount*3:
-                locs = locs[amount*3:]
+            if len(locs) > amount * 3:
+                locs = locs[amount * 3:]
                 for loc in locs:
                     for portal in game.get_enemy_portals():
                         if portal.distance(loc) < min_dist_efrom_enemy_portals:
