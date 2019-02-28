@@ -1,35 +1,31 @@
 from elf_kingdom import *
 from Start import Start
 from Portals import Portals
+from newMath import *
 
 __metaclass__ = type
 
 
 class Infrastructure(Start):
-    def __init__(self, game, elfDict, start_distance=800, radius=1000, ziging_distance=500):
+    def __init__(self, game, elfDict, start_distance=800, radius=1000, ziging_angle=2):
         """
         the class builds portals systematicly along the game board
         :param game: game instence
         :param elfDict: elfDict
         :param start_distance: the distance the first portal will be built from our castle
         :param radius: the starting point and the just it will make each time it will place a portal
-        :param ziging_distance: de delta of the ofset for the zigzag (+-)
+        :param ziging_angle: the angle of the oofset for the zigzag (+-)
         """
         self.game = game
         self.elfDict = elfDict
         self.radius = start_distance
         self.radius_delta = radius
+        self.ziging_angle = ziging_angle
         self.portal_locations = []
         self.built_portals = []
         self.not_built = []
         enemy_castle_loc = game.get_enemy_castle().location
         my_castle_loc = game.get_my_castle().location
-        # if y delta is bigger the x delta:
-        if (Location(enemy_castle_loc.row, 0).distance(Location(my_castle_loc.row, 0)) >
-            Location(0, enemy_castle_loc.col).distance(Location(0, my_castle_loc.col))):
-            self.zigzag_delta = [Location(0, ziging_distance), 1]
-        else:
-            self.zigzag_delta = [Location(ziging_distance, 0), 1]
 
     def update(self, game, elfDict):
         """
@@ -40,6 +36,7 @@ class Infrastructure(Start):
         self.game = game
         self.elfDict = elfDict
         self.update_portals(self.not_built)
+        self.portal_locations = list( dict.fromkeys(self.portal_locations))
 
     def update_portals(self, not_built):
         """
@@ -72,12 +69,12 @@ class Infrastructure(Start):
         game = self.game
         my_castle = game.get_my_castle()
         enemy_castle = game.get_enemy_castle()
-        if self.zigzag_delta[1] > 0:
-            target_location = enemy_castle.location.add(self.zigzag_delta[0])
-        else:
-            target_location = enemy_castle.location.subtract(self.zigzag_delta[0])
+        target_location = get_point_by_alpha(self.ziging_angle, my_castle.location, enemy_castle.location)
         start_location = my_castle.location.towards(target_location, self.radius)
-        return self.get_object_ring_locations(game, my_castle.location, start_location, 1, 0)[0]
+        location = self.get_object_ring_locations(game, my_castle.location, start_location, 1, 0)
+        if len(location) > 0:
+            return location[0]
+        return location
         #except Exception as msg:
         #    print msg, "get_next_location"
 
@@ -95,9 +92,9 @@ class Infrastructure(Start):
                     self.portal_locations.append(portals_sorted[0].location)
                     self.radius = game.get_my_castle().distance(portals_sorted[0]) + self.radius_delta + 50
                     next_location = next_location = self.get_next_location()
-
-            self.radius += self.radius_delta
-            self.zigzag_delta[1] *= -1
+            if self.radius < game.get_my_castle().distance(game.get_enemy_castle()) - self.radius_delta:
+                self.radius += self.radius_delta
+            self.ziging_angle *= -1
             self.portal_locations.append(next_location)
         #except Exception as msg:
         #    print msg, "add_infrastructure"
@@ -109,4 +106,3 @@ class Infrastructure(Start):
         self.not_built = self.build_structure_ring(self.game, locations, self.elfDict, 0)
         #except Exception as msg:
         #    print msg, "build_and_maintain"
-#
