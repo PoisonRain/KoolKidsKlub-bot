@@ -14,7 +14,7 @@ def get_alpha_from_points(center_point, trgt_point):
     center_point = location_to_tuple(center_point)
     trgt_point = location_to_tuple(trgt_point)
 
-    a = math.asin((trgt_point[1] - center_point[1]) / radius)
+    a = math.asin((trgt_point[1] - center_point[1]) / float(radius))
     if math.cos(a) < 0:
         return 180-math.degrees(a)
     return math.degrees(a)
